@@ -1,479 +1,132 @@
 ---
-title: 'PlantUMLを利用してドメインモデルを設計する'
+title: 'イベントストーミングを利用してドメインモデリングする'
 ---
 
-# はじめに
+# イベントストーミングとは
 
-本章ではイベントストーミングを通じて識別された集約を、PlantUML を使って図式化し、更に詳細なドメインモデルを作成していきます。PlantUML の詳しい仕様についてはここでは説明しません。公式をご参照ください。
-https://plantuml.com/ja/
+イベントストーミングは、**複雑なビジネスプロセスやドメインの知識を共有、可視化、そして理解するための協同作業ベースのモデリング手法**で、アルベルト・ブランディリーニ (Alberto Brandolini) 氏によって考案されました。
+伝統的なモデリングや要件定義の手法は、多くの場合、ビジネスステークホルダーとソフトウェア開発者の間にコミュニケーションのギャップが生じる可能性がありました。イベントストーミングは、このギャップを埋めるために生み出されました。この手法は、関係者が同じ空間に集まり、ホワイトボードや miro などのオンラインコラボレーションツールを用いて、直感的でインタラクティブな方法でドメインの知識を共有し、問題点や機会を特定することを目的としています。
 
-# PlantUML とは
+## 最終的にイベントストーミングを通じて作成された図
 
-PlantUML は、テキストベースで UML（Unified Modeling Language）図を作成するためのオープンソースツールです。このツールは、シンプルな疑似コードとプレーンテキスト記述を使用して、シーケンス図、クラス図、アクティビティ図、コンポーネント図、ステート図など、さまざまな種類の UML 図を生成することができます。
+最終的な成果物はこちらです。それではどのような過程で作成されるか見ていきましょう。
+@[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=843-1791&t=hvtQJVFBGW90SwuN-0)
 
-## PlantUML の主な特徴
+## ルール
 
-- 視覚的な図を**コードで表現**するため、バージョン管理システムを用いて簡単に変更履歴を追跡したり、チームでのコラボレーションを行うことが可能です。
-- シーケンス図、ユースケース図、クラス図など、UML のさまざまな図をサポートしているため、あらゆる種類のモデリングに対応できます。
-- 理解しやすく簡潔な構文を使用しており、大規模な図でも管理しやすくなっています。
-  多様な図のサポート: シーケンス図、ユースケース図、クラス図など、UML のさまざまな図をサポートしているため、あらゆる種類のモデリングに対応できます。
-- さまざまなエディタや IDE（統合開発環境）と統合することができ、プラグインやエクステンションを使用して機能を拡張できます。
+イベントストーミングにはいくつかの要素とルールが存在します。
+まずは登場する要素を 7 つ紹介します。
 
-# 環境のセットアップ
+1. **ドメインイベント**
+   これは「何が起こったか」という出来事を表します。イベントは過去に起きるものなので過去形の動詞で表現されます（例：「注文が承認された」、「商品が出荷された」など）。ドメインイベントはビジネス上の重要な出来事や変更を示すもので、ドメインの中心的な要素として捉えられます。
+2. **ポリシー**
+   ドメインイベントが発生したときに何をすべきかを定義するビジネスルールやロジックを表します。ポリシーはあるドメインイベントに応じて実行すべきコマンドを決定するためのガイドラインとなります。
+3. **コマンド**
+   システムに何かを「行うように」という指示や命令を表す。その結果としてドメインイベントが発生します（例：「注文を承認する」、「商品を出荷する」など）。
+4. **アクター**
+   コマンドを発行する人やシステムのこと。アクターは外部の利用者やシステムであり、特定のコマンドを通じてドメインと対話します。
+5. **ビュー/リードモデル**
+   システムの状態や情報を参照するための表現です。これは通常、ユーザーインターフェイスで提供されるデータの表現を指します。
+6. **集約(Aggregates)**
+   集約とは、ドメイン駆動設計（DDD）における戦術的設計で、関連するデータとそのデータを操作するビジネスルールや制約を一つのグループにまとめたものです。これにより、データの不整合を防ぐための「一貫性の境界」が設けられ、この境界内でのみデータの状態変更が可能です。集約は複数の値オブジェクトやエンティティをまとめ、それらが共に働くことでビジネスの要件を満たすよう設計された、データとロジックのカプセル化された集合体です。
+   :::message
+   集約、値オブジェクトの詳細、実装はドメインオブジェクト編(TODO: リンク作る)で行います。
+   著者の経験上イベントストーミングの段階で完璧な集約を定義することは難しいです。そのためこの段階では「集約は大まかにエンティティと同等」と考え、プロジェクトが進行するにつれてその定義を洗練させていくのが良いです。
+   :::
+7. **外部システム**
+   その名の通り外部のシステムです。例えば Twitter や Slcak の API などです。
 
-PlantUML を使用するための環境設定について説明します。ここでは、Visual Studio Code（VS Code）をエディタとして使用します。
+そしてこれらの要素には次の図のような関係性があります。
+@[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=10-1551&t=ppbGdPusmMcJCkrs-0)
+ドメインイベントを中心に捉え、イベント同士に繋がりがある場合に必ず以下の 2 パターンのどちらかを経由し、繋げる必要があります。
 
-## PlantUML のインストール
+- ドメインイベント -> ビュー/リードモデル -> アクター -> コマンド -> 外部システム/集約 -> ドメインイベント
+- ドメインイベント -> ポリシー -> コマンド -> 外部システム/集約 -> ドメインイベント
 
-VS Code を開き、PlantUML 拡張機能を見つけてインストールしてください。
-![](https://storage.googleapis.com/zenn-user-upload/0c6ca1d9c641-20231014.png)
+複数の関係者やシステムがどう絡み合っているのかを理解するため、参加者全員で情報を出し合い、誰がどんな行動を取り、それによってどんな出来事が起こるのかを一緒に書き出していきます。このやり取りを繰り返すことで、全体の流れが見えやすくなり、より明確に理解できるようになります。
 
-## 動作確認
+## 進め方
 
-適当なディレクトリで「test.pu」ファイルを作成し、コードをコピペしてください。
+フローを細分化して説明していきます。
 
-```bash
-$ touch test.pu
-```
+1. **参加者の選定**
 
-```plantuml:test.pu
-@startuml test
+- ドメインエキスパート
+- ソフトウェア開発者
+- プロダクトオーナーやプロジェクトマネージャー
+- UX/UI デザイナーなど、関連するステークホルダー
+  :::message
+  著者の経験上、サービスに UI が必要となる場合、UX/UI デザイナーも同席することをお勧めします。理由は 3 点あります。
 
-package Test {
-    class Test {
-       hoge: Hoge
-    }
-    class  Hoge {}
+  1. **直感的なインターフェイスの議論**
+     システムの動作やプロセスを議論する際、それをサポートする UI の要件や挙動に関するディスカッションも必要となることがあります。デザイナーが同席することで、これらの議論がより具体的かつ効果的に進行します。
 
-    Test -- Hoge
-}
+  2. **プロトタイピングの迅速なフィードバック**
+     イベントストーミングの結果をもとにプロトタイプやモックアップが作成される場合、デザイナーはその場で迅速かつ適切なフィードバックを提供することができます。
 
-@enduml
-```
+  3. **UI/UX の向上**
+     システムやサービスの成功は、技術的な実装だけでなく、最終的な UI/UX にも大きく依存します。デザイナーが初期段階から関与することで、最終的な製品の品質とユーザーサティスファクションを向上させることができます。
+     :::
 
-次に VS Code で「test.pu」ファイルを開いている状態で「option + D」を押下し以下のように表示されれば動作確認完了になります。「test.pu」 ファイルは以降使用しないので削除しましょう。
-![](https://storage.googleapis.com/zenn-user-upload/8f35479e6bb0-20231015.png)
+1. **ツールの選定**
 
-# ドメインモデル図の作成
+- ホワイトボード(オフライン)
+- miro、figjam などのオンラインコラボレーションツール
+  今回は[figjam](https://www.figma.com/ja/figjam/)を利用していきます。
 
-ドメインモデル図を簡単に説明すると、ドメイン知識を反映したクラス図です。以下のイベントストーミングの成果を参照し、在庫管理ドメインの集約とその属性、ルール、関連性、多重度を PlantUML を利用し表現していきましょう。
-@[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=843-1791&t=0509ZPxx9p8xu8qE-0)
-
-## プロジェクトディレクトリの作成
-
-ターミナルを開き、プロジェクトディレクトリを作成する場所に移動し、新しいディレクトリを作成します。ディレクトリ名はドメイン名とします。
-
-```bash
-$ mkdir OnlineBookstore
-```
-
-さらにサブディレクトリを作成します。ディレクトリ名はコアドメインもしくはサブドメイン名になります。ここでは StockManagementDomain(在庫管理)とします。
-
-```bash
-$ mkdir OnlineBookstore/StockManagementDomain
-```
-
-さらにサブディレクトリを作成します。ディレクトリ名は共通で「Domain」になります。
-
-```bash
-$ mkdir OnlineBookstore/StockManagementDomain/Domain
-```
+3. **ドメインイベントの洗い出し**
+   主要なドメインで起きるドメインイベントを参加者全員で洗い出します。恐れることはありません、思いつく限り出しましょう。この時に何となくの時系列で配置しておくと 4 の手間が軽減します。
+4. **ドメインイベント同士を時系列で繋げる**
+   ドメインイベント同士に繋がりがある場合、ドメインイベントと同士を時系列の流れに合わせて矢印で繋ぎます。
+5. **ドメインイベント同士のギャップを埋める**
+   前の項目で説明したルールに則ってドメインイベント間のギャップを埋めていきます。
+   a. **疑問、懸念事項、不確実要素をメモする**
+   イベントストーミングを通して発生した疑問、懸念事項、不確実要素などをホットスポットとしてログを残します。この作業はどのタイミングで行っても大丈夫です。
+6. **集約を特定する**
+   **コマンド**の目的語に当たるものが集約である可能性が高いです。例えば：「注文を承認する」がコマンドの場合「注文」が集約になります。
+7. **境界づけられたコンテキストの定義、コアドメイン、サブドメインを特定する**
+   同一名称の集約が存在した場合それぞれを比較し、言葉が持つ意味や関連情報が異なる場合、境界づけられたコンテキストとなります。適当に線を引き区分けしましょう。その後、各境界でコアドメインなのかサブドメインなのかを特定します。
 
 :::message
-この Domain ディレクトリは DDD にとって最も重要で、ドメインモデル図やドメインオブジェクトのコードなどドメインに関連する情報が集約されます。
+上記の順番を完璧に守る必要はありません。フローが進むにつれて新しいドメインイベントの発見や、考慮漏れが必ず発生するのでその都度書き加えるなど柔軟に対応しましょう。
 :::
 
-さらにサブディレクトリを作成します。ディレクトリ名は共通で「models」になります。ここではドメインモデルを配置することになります。
+# オンライン書店ドメインを例にやってみる
 
-```bash
-$ mkdir OnlineBookstore/StockManagementDomain/Domain/models
-```
+今まで例として扱ってきたオンライン書店ドメインで実際にイベントストーミングを行なっていきましょう。
 
-さらにサブディレクトリを作成します。ディレクトリ名は集約名になります。ここではイベントストーミングの図を参照し、在庫管理コンテキストの集約の一つである「書籍(Book)」を作成します。
-
-```bash
-$ mkdir OnlineBookstore/StockManagementDomain/Domain/models/Book
-```
-
-## ドメインモデルの作成
-
-ドメインモデルを設計します。以下のコマンドで 「Book.pu」 ファイルを作成します。拡張子は 「**.pu**」 となります。
-
-```bash
-$ cd OnlineBookstore/StockManagementDomain/Domain/models/Book
-$ touch Book.pu
-```
-
-次に、PlantUML のコードを解説します。
-
-1. **エンティティの定義**
-   エンティティをクラス図で表現し、持つべき属性の対訳(英語 ⇆ 日本語)を定義します。
-   **Book (Root Entity):** 「**集約のルート**」として機能するエンティティです。
-   **Stock:** 在庫を表すエンティティです。
-   :::message
-   集約のルートとはデータの入出力の単位であり、強整合性が担保できる範囲を指します。(TODO:うめる)編で詳しく説明します。
-   :::
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
-@startuml BookAggregation
-
-title 書籍集約 (Book Aggregation)
-
-package "書籍集約(BookAggregation)" {
-    ' 1. エンティティの定義
-    class "Book(書籍)" as Book << (R,red) RootEntity >> {
-        BookId: BookId
-        Title: タイトル
-        Price: 価格
-    }
-
-    class "Stock(在庫)" as Stock << (E,green) Entity >> {
-        StockId: StockId
-        BookId: BookId
-        QuantityAvailable: 在庫数
-        Status: ステータス
-    }
-}
-
-@enduml
-```
-
-1. **属性の定義**
-   エンティティの属性をクラス図で表現し、型を定義します。
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
-@startuml BookAggregation
-
-title 書籍集約 (Book Aggregation)
-
-package "書籍集約(BookAggregation)" {
-    ' 1. エンティティの定義
-    ...
-    ' 2. 属性の定義
-    class "BookId" as BookId {
-        + value: string
-    }
-
-    class "Title(タイトル)" as Title {
-        + value: string
-    }
-
-    class "Price(価格)" as Price {
-        + value: number
-    }
-
-    class "Status(ステータス)" as Status {
-       + value: Enum { 販売前, 販売中, 販売停止 }
-    }
-
-    class "StockId" as StockId {
-        + value: string
-    }
-
-    class "QuantityAvailable(在庫数)" as QuantityAvailable {
-        + value: number
-    }
-}
-
-@enduml
-```
-
-3. **ルールの追加**
-   **note** キーワードを使用して、特定のエンティティや属性、その関連に対するビジネスルールや制約を追加しています。これらのルールは、ドメインの整合性を保つために必要です。
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
-@startuml BookAggregation
-
-title 書籍集約 (Book Aggregation)
-
-package "書籍集約(BookAggregation)" {
-    ' 1. エンティティの定義
-    ...
-    ' 2. 属性の定義
-    ...
-    ' 3. ルールの追加
-    note bottom of BookId
-        ISBNを適用する。
-        ISBNとは登録出版者の責任において、
-        書籍の書名(タイトル)ごとに付与される番号。
-    end note
-
-    note bottom of Title
-        MAX_LENGTH = 1000
-        MIN_LENGTH = 1
-    end note
-
-    note bottom of QuantityAvailable
-        整数のみ許可
-    end note
-
-    note bottom of Price
-        日本円のみ扱う。
-        MAX = 1,000,000
-        MIN = 1
-    end note
-
-    note bottom of Stock
-	 - 初回作成時、ステータスは「販売前」から始まる。
-	 - 在庫数は0の場合は在庫切れ。
-    end note
-
-    note bottom of Status
-        書籍のステータスは、 PreSale (販売前), OnSale (販売中),
-        Discontinued (販売停止)の3つ
-    end note
-}
-
-@enduml
-```
-
-4. **関連性の定義**
-   関連性はエンティティと属性の間のリンクを示しています。このモデルでは、Book エンティティと Stock エンティティが 1 対 1 の関係にあり、Book、Stock はそれぞれ複数の属性と関連付していることがわかります。
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
-@startuml BookAggregation
-
-title 書籍集約 (Book Aggregation)
-
-package "書籍集約(BookAggregation)" {
-    ' 1. エンティティの定義
-    ...
-    ' 2. 属性の定義
-    ...
-    ' 3. ルールの追加
-    ...
-    ' 4. 関連性の定義
-    Book "1" -down- "1" Stock : has >
-
-    Book *-down- BookId
-    Book *-down- Title
-    Book *-down- Price
-
-    Stock *-down- StockId
-    Stock *-down- BookId
-    Stock *-down- QuantityAvailable
-    Stock *-down- Status
-}
-
-@enduml
-```
-
-それでは、「option + D」で完成したドメインモデル図を確認してみましょう。
-![](https://storage.googleapis.com/zenn-user-upload/1153d97bdf79-20231022.png)
-この図は、書籍集約のドメインモデルを視覚的に表現しており、各エンティティや属性、それらの関係性、そしてビジネスルールを明確に理解するのに役立ちます。この図により、機能の実装やドメインロジックのテストに効率的に取り組むことが可能になります。
-
-## ディレクトリの分割
-
-次のステップでは、エンティティ、属性の粒度で個別のファイルやディレクトリに割り当てます。このフェーズでは、エンティティや属性(値オブジェクト)の実装に向け管理しやすい構造の作成を目指します。
-PlantUML では「!include ./BookId/BookId.pu」のように相対パスで UML ファイルを読み込むことができます。それではこの機能を利用し、分割していきましょう。
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
-@startuml Book
-
-!include ./BookId/BookId.pu
-!include ./Title/Title.pu
-!include ./Price/Price.pu
-
-class "Book(書籍)" as Book << (R,red) RootEntity >> {
-    BookId: BookId
-    Title: タイトル
-    Price: 価格
-}
-
-Book *-down- BookId
-Book *-down- Title
-Book *-down- Price
-
-@enduml
-```
-
-:::details .../Book/BookId/BookId.pu
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/BookId/BookId.pu
-@startuml BookId
-
-class "BookId" as BookId {
-    + value: string
-}
-
-note bottom of BookId
-    ISBNを適用する。
-    ISBNとは登録出版者の責任において、
-    書籍の書名(タイトル)ごとに付与される番号。
-end note
-
-@enduml
-```
-
+:::message alert
+内容はオンライン書店のビジネスモデルや要件に応じて異なります。
+ここではシンプルにするため、「認証」、「発送」など細かな知識を一部省略しています。
+また、著者はオンライン書店のドメインエキスパートではございません。
+書店や EC 領域の理解に間違いがある可能性がございます。予めご了承ください。
 :::
 
-:::details .../Book/Book/Price/Price.pu
+1. **参加者の選定**
+   今回は著者一名で行います。
+2. **ツールの選定**
+   今回は[figjam](https://www.figma.com/ja/figjam/)を利用していきます。
+3. **ドメインイベントの洗い出し**
+   @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=1-1547&t=ppbGdPusmMcJCkrs-0)
+4. **ドメインイベント同士を時系列で繋げる**
+   @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=332-553&t=P5SgzhzwPW6aWrpT-0)
+5. **ドメインイベント同士のギャップを埋める**
+   ここではプロセス中に考慮漏れに気づき、ドメインイベントを追加しています。
+   @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=486-862&t=3OOKVvzzGCmuQPXD-0)
+   a. **疑問、懸念事項、不確実要素をメモする**
+   @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=729-1163&t=vWwcw54QwFOojvjC-0)
+6. **集約を特定する**
+   @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=729-1434&t=vWwcw54QwFOojvjC-0)
+7. **境界づけられたコンテキストの定義、コアドメイン、サブドメインを特定する**
+   @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=843-1791&t=hvtQJVFBGW90SwuN-0)
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Price/Price.pu
-@startuml Price
-
-class "Price(価格)" as Price {
-    + value: number
-}
-
-note bottom of Price
-    日本円のみ扱う。
-    MAX = 1,000,000
-    MIN = 1
-end note
-
-@enduml
-```
-
-:::
-
-:::details .../Book/Book/Title/Title.pu
-
-```plantuml:.../Book/Book/Title/Title.pu
-
-@startuml Title
-
-class "Title(タイトル)" as Title {
-    + value: string
-}
-
-note bottom of Title
-    MAX_LENGTH = 1000
-    MIN_LENGTH = 1
-end note
-
-@enduml
-```
-
-:::
-
-:::details .../Book/Book/QuantityAvailable/QuantityAvailable.pu
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/QuantityAvailable/QuantityAvailable.pu
-
-@startuml QuantityAvailable
-
-class "QuantityAvailable(在庫数)" as QuantityAvailable {
-    + value: number
-}
-
-note bottom of QuantityAvailable
-    整数のみ許可
-end note
-
-@enduml
-```
-
-:::
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/Stock.pu
-
-@startuml Stock
-
-class "Stock(在庫)" as Stock << (E,green) Entity >> {
-    StockId: StockId
-    BookId: BookId
-    QuantityAvailable: 在庫数
-    Status: ステータス
-}
-
-note bottom of Stock
-    - 初回作成時、ステータスは「販売前」から始まる。
-    - 在庫数は0の場合は在庫切れ。
-end note
-
-@enduml
-```
-
-:::details .../Book/Stock/StockId/StockId.pu
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/StockId/StockId.pu
-
-@startuml StockId
-
-class "StockId" as StockId {
-    + value: string
-}
-
-@enduml
-```
-
-:::
-
-:::details .../Book/Stock/Status/Status.pu
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/Status/Status.pu
-
-@startuml Status
-
-class "Status(ステータス)" as Status {
-    + value: Enum { 販売前, 販売中, 販売停止 }
-}
-
-note bottom of Status
-    書籍のステータスは、 PreSale (販売前), OnSale (販売中),
-    Discontinued (販売停止)の3つ
-end note
-
-@enduml
-```
-
-:::
-
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/BookAggregation.pu
-
-@startuml BookAggregation
-
-title 書籍集約 (Book Aggregation)
-
-package "書籍集約(BookAggregation)" {
-    !include ./Book.pu
-    !include ./Stock/Stock.pu
-
-    Book "1" -down- "1" Stock : has >
-}
-
-@enduml
-
-```
-
-「BookAggregation.pu」ファイルで「option + D」を押下し、分割前のドメインモデル図と同じ図が表示されれば完了です。
+以上でイベントストーミングは終了です。
+イベントストーミングを通じて作成された図は、ドメインにとって重要なワークフローを視覚的に表現するものです。このプロセスは、関係者がビジネスの要件、制約を理解し、システムの振る舞いや相互作用を明確に把握するのに非常に役立ちます。しかしながら、ビジネスや市場のニーズは時間とともに変化します。したがって、イベントストーミングが一度完了したとしても、その成果物は静的なものではなく、進化し続けるドメインの動きを反映するために、定期的なレビューと更新が必要となります。
 
 # まとめ
 
-- PlantUML は、テキストベースで UML（Unified Modeling Language）図を作成するためのオープンソースツールで、ドメインモデル図を簡単に作成できる。
-- ドメインモデル図は、ドメイン知識を反映したクラス図で、機能の実装やドメインロジックのテストの仕様書として活用できる。
+- イベントストーミングは、**複雑なビジネスプロセスやドメインの知識を共有、可視化、そして理解するための協同作業ベースのモデリング手法**
+- 変化に対応するため定期的更新が必要
 
-本章では、PlantUML を使用してドメインモデル図を作成するプロセスを解説しました。
-お待たせしました。次章からはドメイン駆動設計の戦術的設計に焦点を当て、ドメインモデリングの成果物をもとに具体的なコードの実装を行っていきます。
-
-### これまでのコード
-
-https://github.com/yamachan0625/ddd-hands-on/tree/domain-modeling
-
-### これまでの階層構造
-
-```js:
-OnlineBookstore
-│
-└───StockManagementDomain
-    │
-    └───Domain/models/Book
-        │   BookId
-        │   ├───BookId.pu
-        │   Price
-        │   ├───Price.pu
-        │   Stock
-        │   │   QuantityAvailable
-        │   │   ├───QuantityAvailable.pu
-        │   │   Status
-        │   │   ├───Status.pu
-        │   │   StockId
-        │   │   ├───StockId.pu
-        │   │   ├───Stock.pu
-        │   Title
-        │   ├───Title.pu
-        │   ├───Book.pu
-        │   └───BookAggregation.pu
-
-```
+本章では戦略的設計における「コアドメイン、サブドメインの特定」、「境界づけられたコンテキストの定義」、「エンティティの特定(ビジネス要件の確認、エンティティの識別)」、「ビジネスルールの把握」を行いました。
+以降「在庫管理コンテキスト(サブドメイン)」を対象として扱い、DDD を探究していきます。次章では戦略的設計における「エンティティの特定(属性の識別、エンティティ間の関連の定義)」を、**PlantUML**を利用し行います。
