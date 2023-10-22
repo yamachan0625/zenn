@@ -30,7 +30,7 @@ VS Code を開き、PlantUML 拡張機能を見つけてインストールして
 
 ## 動作確認
 
-適当な場所で「test.pu」ファイルを作成し、以下の内容をコピペしてください。
+適当なディレクトリで「test.pu」ファイルを作成し、コードをコピペしてください。
 
 ```bash
 $ touch test.pu
@@ -51,12 +51,12 @@ package Test {
 @enduml
 ```
 
-次に「test.pu」ファイルを VS Code で開いている状態で「option + D」を押下し以下のように表示されれば動作確認完了になります。test.pu ファイルは以降使用しないので削除しましょう。
+次に VS Code で「test.pu」ファイルを開いている状態で「option + D」を押下し以下のように表示されれば動作確認完了になります。「test.pu」 ファイルは以降使用しないので削除しましょう。
 ![](https://storage.googleapis.com/zenn-user-upload/8f35479e6bb0-20231015.png)
 
 # ドメインモデル図の作成
 
-ドメインモデル図を簡単に説明すると、ドメイン知識を反映したクラス図です。イベントストーミングの成果を参照し、在庫管理ドメインの集約とその属性、ルール、関連性、多重度を PlantUML を利用し表現していきましょう。
+ドメインモデル図を簡単に説明すると、ドメイン知識を反映したクラス図です。以下のイベントストーミングの成果を参照し、在庫管理ドメインの集約とその属性、ルール、関連性、多重度を PlantUML を利用し表現していきましょう。
 @[figma](https://www.figma.com/file/g04nAogGCGgM62IKXHUSLT/Online-bookstore?type=whiteboard&node-id=843-1791&t=0509ZPxx9p8xu8qE-0)
 
 ## プロジェクトディレクトリの作成
@@ -89,7 +89,7 @@ $ mkdir OnlineBookstore/StockManagementDomain/Domain
 $ mkdir OnlineBookstore/StockManagementDomain/Domain/models
 ```
 
-さらにサブディレクトリを作成します。ディレクトリ名は集約名になります。ここではイベントストーミングを参照し在庫管理コンテキストの集約の一つである「書籍(Book)」を作成します。
+さらにサブディレクトリを作成します。ディレクトリ名は集約名になります。ここではイベントストーミングの図を参照し、在庫管理コンテキストの集約の一つである「書籍(Book)」を作成します。
 
 ```bash
 $ mkdir OnlineBookstore/StockManagementDomain/Domain/models/Book
@@ -97,7 +97,7 @@ $ mkdir OnlineBookstore/StockManagementDomain/Domain/models/Book
 
 ## ドメインモデルの作成
 
-ドメインモデルを設計します。以下のコマンドで Book.pu ファイルを作成します。拡張子は **.pu** となります。
+ドメインモデルを設計します。以下のコマンドで 「Book.pu」 ファイルを作成します。拡張子は 「**.pu**」 となります。
 
 ```bash
 $ cd OnlineBookstore/StockManagementDomain/Domain/models/Book
@@ -108,13 +108,13 @@ $ touch Book.pu
 
 1. **エンティティの定義**
    エンティティをクラス図で表現し、持つべき属性の対訳(英語 ⇆ 日本語)を定義します。
-   **Book (Root Entity):** 「**集約のルート**」として機能するエンティティです。BookId、タイトル、著者、出版日、価格、そしてステータスという属性を持ちます。
-   **Stock:** 在庫を表すエンティティで、StockId、BookId、在庫数、ステータスという属性を持ちます。
+   **Book (Root Entity):** 「**集約のルート**」として機能するエンティティです。
+   **Stock:** 在庫を表すエンティティです。
    :::message
-   集約のルートとはデータの入出力の単位であり、強整合性が担保できる範囲です。(TODO:うめる)編で詳しく説明します。
+   集約のルートとはデータの入出力の単位であり、強整合性が担保できる範囲を指します。(TODO:うめる)編で詳しく説明します。
    :::
 
-```plantuml:OnlineBookstore/.../Book/Book.pu
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -124,8 +124,6 @@ package "書籍集約(BookAggregation)" {
     class "Book(書籍)" as Book << (R,red) RootEntity >> {
         BookId: BookId
         Title: タイトル
-        Author: 著者
-        PublicationDate: 出版日
         Price: 価格
     }
 
@@ -140,10 +138,10 @@ package "書籍集約(BookAggregation)" {
 @enduml
 ```
 
-2. **属性（値オブジェクト）の定義**
-   エンティティの属性を型でより詳細に表現します。
+1. **属性の定義**
+   エンティティの属性をクラス図で表現し、型を定義します。
 
-```plantuml:OnlineBookstore/.../Book/Book.pu
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -151,21 +149,13 @@ title 書籍集約 (Book Aggregation)
 package "書籍集約(BookAggregation)" {
     ' 1. エンティティの定義
     ...
-    ' 2. 属性(値オブジェクト)の定義
+    ' 2. 属性の定義
     class "BookId" as BookId {
         + value: string
     }
 
     class "Title(タイトル)" as Title {
         + value: string
-    }
-
-    class "Author(著者)" as Author {
-        + value: string
-    }
-
-    class "PublicationDate(出版日)" as PublicationDate {
-        + value: Date
     }
 
     class "Price(価格)" as Price {
@@ -189,9 +179,9 @@ package "書籍集約(BookAggregation)" {
 ```
 
 3. **ルールの追加**
-   **note** キーワードを使用して、特定の属性や関連に対するビジネスルールや制約を追加しています。これらのルールは、ドメインの整合性を保つために必要です。
+   **note** キーワードを使用して、特定のエンティティや属性、その関連に対するビジネスルールや制約を追加しています。これらのルールは、ドメインの整合性を保つために必要です。
 
-```plantuml:OnlineBookstore/.../Book/Book.pu
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -199,7 +189,7 @@ title 書籍集約 (Book Aggregation)
 package "書籍集約(BookAggregation)" {
     ' 1. エンティティの定義
     ...
-    ' 2. 属性(値オブジェクト)の定義
+    ' 2. 属性の定義
     ...
     ' 3. ルールの追加
     note bottom of BookId
@@ -209,11 +199,6 @@ package "書籍集約(BookAggregation)" {
     end note
 
     note bottom of Title
-        MAX_LENGTH = 1000
-        MIN_LENGTH = 1
-    end note
-
-    note bottom of Author
         MAX_LENGTH = 1000
         MIN_LENGTH = 1
     end note
@@ -243,9 +228,9 @@ package "書籍集約(BookAggregation)" {
 ```
 
 4. **関連性の定義**
-   関連性はエンティティと値オブジェクトの間のリンクを示しています。このモデルでは、Book エンティティと Stock エンティティが 1 対 1 の関係にあり、Book、Stock は複数の値オブジェクトと関連付けられています。
+   関連性はエンティティと属性の間のリンクを示しています。このモデルでは、Book エンティティと Stock エンティティが 1 対 1 の関係にあり、Book、Stock はそれぞれ複数の属性と関連付していることがわかります。
 
-```plantuml:OnlineBookstore/.../Book/Book.pu
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -253,7 +238,7 @@ title 書籍集約 (Book Aggregation)
 package "書籍集約(BookAggregation)" {
     ' 1. エンティティの定義
     ...
-    ' 2. 属性(値オブジェクト)の定義
+    ' 2. 属性の定義
     ...
     ' 3. ルールの追加
     ...
@@ -262,8 +247,6 @@ package "書籍集約(BookAggregation)" {
 
     Book *-down- BookId
     Book *-down- Title
-    Book *-down- Author
-    Book *-down- PublicationDate
     Book *-down- Price
 
     Stock *-down- StockId
@@ -275,17 +258,222 @@ package "書籍集約(BookAggregation)" {
 @enduml
 ```
 
-それでは、「option + D」でドメインモデル図を確認してみましょう。
-![](https://storage.googleapis.com/zenn-user-upload/ec99c4db9d9a-20231016.png)
-この図は、書籍集約のドメインモデルを視覚的に表現しており、各エンティティや値オブジェクト、それらの関係性、そしてビジネスルールを明確に理解するのに役立ちます。これにより、機能の実装やドメインロジックの検証に効率的に取り組むことが可能になります。
+それでは、「option + D」で完成したドメインモデル図を確認してみましょう。
+![](https://storage.googleapis.com/zenn-user-upload/1153d97bdf79-20231022.png)
+この図は、書籍集約のドメインモデルを視覚的に表現しており、各エンティティや属性、それらの関係性、そしてビジネスルールを明確に理解するのに役立ちます。この図により、機能の実装やドメインロジックのテストに効率的に取り組むことが可能になります。
 
-# ここまでのディレクトリ階層構造
+## ディレクトリの分割
+
+次のステップでは、エンティティ、属性の粒度で個別のファイルやディレクトリに割り当てます。このフェーズでは、エンティティや属性(値オブジェクト)の実装に向け管理しやすい構造の作成を目指します。
+PlantUML では「!include ./BookId/BookId.pu」のように相対パスで UML ファイルを読み込むことができます。それではこの機能を利用し、分割していきましょう。
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
+@startuml Book
+
+!include ./BookId/BookId.pu
+!include ./Title/Title.pu
+!include ./Price/Price.pu
+
+class "Book(書籍)" as Book << (R,red) RootEntity >> {
+    BookId: BookId
+    Title: タイトル
+    Price: 価格
+}
+
+Book *-down- BookId
+Book *-down- Title
+Book *-down- Price
+
+@enduml
+```
+
+:::details .../Book/BookId/BookId.pu
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/BookId/BookId.pu
+@startuml BookId
+
+class "BookId" as BookId {
+    + value: string
+}
+
+note bottom of BookId
+    ISBNを適用する。
+    ISBNとは登録出版者の責任において、
+    書籍の書名(タイトル)ごとに付与される番号。
+end note
+
+@enduml
+```
+
+:::
+
+:::details .../Book/Book/Price/Price.pu
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Price/Price.pu
+@startuml Price
+
+class "Price(価格)" as Price {
+    + value: number
+}
+
+note bottom of Price
+    日本円のみ扱う。
+    MAX = 1,000,000
+    MIN = 1
+end note
+
+@enduml
+```
+
+:::
+
+:::details .../Book/Book/Title/Title.pu
+
+```plantuml:.../Book/Book/Title/Title.pu
+
+@startuml Title
+
+class "Title(タイトル)" as Title {
+    + value: string
+}
+
+note bottom of Title
+    MAX_LENGTH = 1000
+    MIN_LENGTH = 1
+end note
+
+@enduml
+```
+
+:::
+
+:::details .../Book/Book/QuantityAvailable/QuantityAvailable.pu
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/QuantityAvailable/QuantityAvailable.pu
+
+@startuml QuantityAvailable
+
+class "QuantityAvailable(在庫数)" as QuantityAvailable {
+    + value: number
+}
+
+note bottom of QuantityAvailable
+    整数のみ許可
+end note
+
+@enduml
+```
+
+:::
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/Stock.pu
+
+@startuml Stock
+
+class "Stock(在庫)" as Stock << (E,green) Entity >> {
+    StockId: StockId
+    BookId: BookId
+    QuantityAvailable: 在庫数
+    Status: ステータス
+}
+
+note bottom of Stock
+    - 初回作成時、ステータスは「販売前」から始まる。
+    - 在庫数は0の場合は在庫切れ。
+end note
+
+@enduml
+```
+
+:::details .../Book/Stock/StockId/StockId.pu
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/StockId/StockId.pu
+
+@startuml StockId
+
+class "StockId" as StockId {
+    + value: string
+}
+
+@enduml
+```
+
+:::
+
+:::details .../Book/Stock/Status/Status.pu
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/Status/Status.pu
+
+@startuml Status
+
+class "Status(ステータス)" as Status {
+    + value: Enum { 販売前, 販売中, 販売停止 }
+}
+
+note bottom of Status
+    書籍のステータスは、 PreSale (販売前), OnSale (販売中),
+    Discontinued (販売停止)の3つ
+end note
+
+@enduml
+```
+
+:::
+
+```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/BookAggregation.pu
+
+@startuml BookAggregation
+
+title 書籍集約 (Book Aggregation)
+
+package "書籍集約(BookAggregation)" {
+    !include ./Book.pu
+    !include ./Stock/Stock.pu
+
+    Book "1" -down- "1" Stock : has >
+}
+
+@enduml
+
+```
+
+「BookAggregation.pu」ファイルで「option + D」を押下し、分割前のドメインモデル図と同じ図が表示されれば完了です。
+
+# まとめ
+
+- PlantUML は、テキストベースで UML（Unified Modeling Language）図を作成するためのオープンソースツールで、ドメインモデル図を簡単に作成できる。
+- ドメインモデル図は、ドメイン知識を反映したクラス図で、機能の実装やドメインロジックのテストの仕様書として活用できる。
+
+本章では、PlantUML を使用してドメインモデル図を作成するプロセスを解説しました。
+お待たせしました。次章からはドメイン駆動設計の戦術的設計に焦点を当て、ドメインモデリングの成果物をもとに具体的なコードの実装を行っていきます。
+
+### これまでのコード
+
+https://github.com/yamachan0625/ddd-hands-on/tree/domain-modeling
+
+### これまでの階層構造
 
 ```js:
-OnlineBookstore/
-└───StockManagementDomain/
-    └───Domain/
-        └───models/
-            ├───Book/
-		└───Book.pu
+OnlineBookstore
+│
+└───StockManagementDomain
+    │
+    └───Domain/models/Book
+        │   BookId
+        │   ├───BookId.pu
+        │   Price
+        │   ├───Price.pu
+        │   Stock
+        │   │   QuantityAvailable
+        │   │   ├───QuantityAvailable.pu
+        │   │   Status
+        │   │   ├───Status.pu
+        │   │   StockId
+        │   │   ├───StockId.pu
+        │   │   ├───Stock.pu
+        │   Title
+        │   ├───Title.pu
+        │   ├───Book.pu
+        │   └───BookAggregation.pu
+
 ```
