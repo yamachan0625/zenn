@@ -450,30 +450,3 @@ package "書籍集約(BookAggregation)" {
 ### これまでのコード
 
 https://github.com/yamachan0625/ddd-hands-on/tree/domain-modeling
-
-### これまでの階層構造
-
-```js:
-OnlineBookstore
-│
-└───StockManagementDomain
-    │
-    └───Domain/models/Book
-        │   BookId
-        │   ├───BookId.pu
-        │   Price
-        │   ├───Price.pu
-        │   Stock
-        │   │   QuantityAvailable
-        │   │   ├───QuantityAvailable.pu
-        │   │   Status
-        │   │   ├───Status.pu
-        │   │   StockId
-        │   │   ├───StockId.pu
-        │   │   ├───Stock.pu
-        │   Title
-        │   ├───Title.pu
-        │   ├───Book.pu
-        │   └───BookAggregation.pu
-
-```
