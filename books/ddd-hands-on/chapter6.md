@@ -1,5 +1,5 @@
 ---
-title: 'PlantUMLを利用してドメインモデルを設計する'
+title: 'ドメインモデル図の作成'
 ---
 
 # はじめに
@@ -70,13 +70,13 @@ $ mkdir OnlineBookstore
 さらにサブディレクトリを作成します。ディレクトリ名はコアドメインもしくはサブドメイン名になります。ここでは StockManagementDomain(在庫管理)とします。
 
 ```bash
-$ mkdir OnlineBookstore/StockManagementDomain
+$ mkdir StockManagement
 ```
 
 さらにサブディレクトリを作成します。ディレクトリ名は共通で「Domain」になります。
 
 ```bash
-$ mkdir OnlineBookstore/StockManagementDomain/Domain
+$ mkdir StockManagement/Domain
 ```
 
 :::message
@@ -86,13 +86,13 @@ $ mkdir OnlineBookstore/StockManagementDomain/Domain
 さらにサブディレクトリを作成します。ディレクトリ名は共通で「models」になります。ここではドメインモデルを配置することになります。
 
 ```bash
-$ mkdir OnlineBookstore/StockManagementDomain/Domain/models
+$ mkdir StockManagement/Domain/models
 ```
 
 さらにサブディレクトリを作成します。ディレクトリ名は集約名になります。ここではイベントストーミングの図を参照し、在庫管理コンテキストの集約の一つである「書籍(Book)」を作成します。
 
 ```bash
-$ mkdir OnlineBookstore/StockManagementDomain/Domain/models/Book
+$ mkdir StockManagement/Domain/models/Book
 ```
 
 ## ドメインモデルの作成
@@ -100,7 +100,7 @@ $ mkdir OnlineBookstore/StockManagementDomain/Domain/models/Book
 ドメインモデルを設計します。以下のコマンドで 「Book.pu」 ファイルを作成します。拡張子は 「**.pu**」 となります。
 
 ```bash
-$ cd OnlineBookstore/StockManagementDomain/Domain/models/Book
+$ cd StockManagement/Domain/models/Book
 $ touch Book.pu
 ```
 
@@ -114,7 +114,7 @@ $ touch Book.pu
    集約のルートとはデータの入出力の単位であり、強整合性が担保できる範囲を指します。(TODO:うめる)編で詳しく説明します。
    :::
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
+```plantuml:StockManagement/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -141,7 +141,7 @@ package "書籍集約(BookAggregation)" {
 1. **属性の定義**
    エンティティの属性をクラス図で表現し、型を定義します。
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
+```plantuml:StockManagement/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -181,7 +181,7 @@ package "書籍集約(BookAggregation)" {
 3. **ルールの追加**
    **note** キーワードを使用して、特定のエンティティや属性、その関連に対するビジネスルールや制約を追加しています。これらのルールは、ドメインの整合性を保つために必要です。
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
+```plantuml:StockManagement/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -193,9 +193,10 @@ package "書籍集約(BookAggregation)" {
     ...
     ' 3. ルールの追加
     note bottom of BookId
-        ISBNを適用する。
-        ISBNとは登録出版者の責任において、
-        書籍の書名(タイトル)ごとに付与される番号。
+        ISBNコードを適用する。
+        ISBNコードは、ISBNのあとに数字で「978」、
+        さらにグループ（国・地域）番号（日本は4）、出版社番号、書名番号、の合計12桁の数字を並べ、
+        最後にこの12桁の数字を特定の計算式で演算して得た1桁のチェック用の数を付け加えたコード。
     end note
 
     note bottom of Title
@@ -230,7 +231,7 @@ package "書籍集約(BookAggregation)" {
 4. **関連性の定義**
    関連性はエンティティと属性の間のリンクを示しています。このモデルでは、Book エンティティと Stock エンティティが 1 対 1 の関係にあり、Book、Stock はそれぞれ複数の属性と関連付していることがわかります。
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
+```plantuml:StockManagement/Domain/models/Book/Book.pu
 @startuml BookAggregation
 
 title 書籍集約 (Book Aggregation)
@@ -267,7 +268,7 @@ package "書籍集約(BookAggregation)" {
 次のステップでは、エンティティ、属性の粒度で個別のファイルやディレクトリに割り当てます。このフェーズでは、エンティティや属性(値オブジェクト)の実装に向け管理しやすい構造の作成を目指します。
 PlantUML では「!include ./BookId/BookId.pu」のように相対パスで UML ファイルを読み込むことができます。それではこの機能を利用し、分割していきましょう。
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Book.pu
+```plantuml:StockManagement/Domain/models/Book/Book.pu
 @startuml Book
 
 !include ./BookId/BookId.pu
@@ -289,7 +290,7 @@ Book *-down- Price
 
 :::details .../Book/BookId/BookId.pu
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/BookId/BookId.pu
+```plantuml:StockManagement/Domain/models/Book/BookId/BookId.pu
 @startuml BookId
 
 class "BookId" as BookId {
@@ -297,9 +298,10 @@ class "BookId" as BookId {
 }
 
 note bottom of BookId
-    ISBNを適用する。
-    ISBNとは登録出版者の責任において、
-    書籍の書名(タイトル)ごとに付与される番号。
+    ISBNコードを適用する。
+    ISBNコードは、ISBNのあとに数字で「978」、
+    さらにグループ（国・地域）番号（日本は4）、出版社番号、書名番号、の合計12桁の数字を並べ、
+    最後にこの12桁の数字を特定の計算式で演算して得た1桁のチェック用の数を付け加えたコード。
 end note
 
 @enduml
@@ -309,7 +311,7 @@ end note
 
 :::details .../Book/Book/Price/Price.pu
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Price/Price.pu
+```plantuml:StockManagement/Domain/models/Book/Price/Price.pu
 @startuml Price
 
 class "Price(価格)" as Price {
@@ -349,7 +351,7 @@ end note
 
 :::details .../Book/Book/QuantityAvailable/QuantityAvailable.pu
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/QuantityAvailable/QuantityAvailable.pu
+```plantuml:StockManagement/Domain/models/Book/QuantityAvailable/QuantityAvailable.pu
 
 @startuml QuantityAvailable
 
@@ -366,7 +368,7 @@ end note
 
 :::
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/Stock.pu
+```plantuml:StockManagement/Domain/models/Book/Stock/Stock.pu
 
 @startuml Stock
 
@@ -387,7 +389,7 @@ end note
 
 :::details .../Book/Stock/StockId/StockId.pu
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/StockId/StockId.pu
+```plantuml:StockManagement/Domain/models/Book/Stock/StockId/StockId.pu
 
 @startuml StockId
 
@@ -402,7 +404,7 @@ class "StockId" as StockId {
 
 :::details .../Book/Stock/Status/Status.pu
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/Stock/Status/Status.pu
+```plantuml:StockManagement/Domain/models/Book/Stock/Status/Status.pu
 
 @startuml Status
 
@@ -420,7 +422,7 @@ end note
 
 :::
 
-```plantuml:OnlineBookstore/StockManagementDomain/Domain/models/Book/BookAggregation.pu
+```plantuml:StockManagement/Domain/models/Book/BookAggregation.pu
 
 @startuml BookAggregation
 

@@ -1,10 +1,14 @@
 ---
-title: '第2部 戦術的設計'
+title: '第2部 戦術的設計 (コード実装)'
 ---
+
+# 1 部のまとめと 2 部で何するか入れる
 
 # 戦術的設計とは
 
-戦術的設計とは、ビジネスの複雑性をコードにどのように反映させるか、具体的なアプローチやパターンに焦点を当てたものです。第 1 部のメインモデリングでの成果物を DDD のアプローチやパターンを紹介すると共にコードに反映していきます。
+戦術的設計とは、ビジネスの複雑性をコードにどのように反映させるか、具体的なアプローチやパターンに焦点を当てたものです。第 1 部で行ったドメインモデリングでの成果物を DDD のアプローチやパターン(値オブジェクト、エンティティ、集約、リポジトリなど)を紹介すると共に実際にコードに反映していきます。
+
+# アーキテクチャ
 
 # 環境のセットアップ
 
@@ -18,7 +22,7 @@ v18.15.0
 
 ### npm プロジェクトの初期化
 
-```bash:OnlineBookstore/StockManagementDomain
+```bash:StockManagement/
 $ npm init -y
 ```
 
@@ -26,7 +30,7 @@ $ npm init -y
 
 src ディレクトリを作成し Domain ディレクトリを移動します。
 
-```bash:OnlineBookstore/StockManagementDomain
+```bash:StockManagement/
 $ mkdir src && mv Domain/ src/
 ```
 
@@ -34,7 +38,7 @@ $ mkdir src && mv Domain/ src/
 
 必要なパッケージをインストールしていきます。
 
-```bash:OnlineBookstore/StockManagementDomain
+```bash:StockManagement/
 $ npm i -D typescript ts-node tsconfig-paths @types/node jest ts-jest @types/jest
 ```
 
@@ -42,7 +46,7 @@ $ npm i -D typescript ts-node tsconfig-paths @types/node jest ts-jest @types/jes
 
 tsconfig.json を作成し以下のコードをコピーします。オプションはお好みで追加してください。
 
-```json:OnlineBookstore/StockManagementDomain/tsconfig.json
+```json:StockManagement/tsconfig.json
 {
   "ts-node": {
     "require": ["tsconfig-paths/register"]
@@ -70,7 +74,7 @@ tsconfig.json を作成し以下のコードをコピーします。オプショ
 
 「sayHello.ts」 を作成し以下のコードをコピーします。
 
-```js:OnlineBookstore/StockManagementDomain/src/sayHello.ts
+```js:StockManagement/src/sayHello.ts
 export const sayHello = (name: string): void => {
   console.log(`Hello ${name}!`);
 };
@@ -79,7 +83,7 @@ sayHello('World');
 
 ```
 
-```bash:OnlineBookstore/StockManagementDomain
+```bash:StockManagement/
 $ ts-node src/sayHello.ts
 ```
 
@@ -89,7 +93,7 @@ ts-node で実行しターミナルに「Hello World!」が表示されば OK �
 
 「jest.config.js」 を作成し以下のコードをコピーします。
 
-```js:OnlineBookstore/StockManagementDomain/jest.config.js
+```js:StockManagement/jest.config.js
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
@@ -104,7 +108,7 @@ module.exports = {
 テストには jest を利用します。
 「sayHello.test.ts」 を作成し以下のコードをコピーします。
 
-```js:OnlineBookstore/StockManagementDomain/src/sayHello.test.ts
+```js:StockManagement/src/sayHello.test.ts
 import { sayHello } from './sayHello';
 
 test('sayHello', () => {
@@ -113,12 +117,12 @@ test('sayHello', () => {
 
 ```
 
-```bash:OnlineBookstore/StockManagementDomain
+```bash:StockManagement/
 $ jest src/sayHello.test.ts
 ```
 
 テストに成功すれば OK です。
-「sayHello.ts」と「sayHello.test.ts」は削除しましょう。
+「sayHello.ts」と「sayHello.test.ts」は以降使用しないため削除しましょう。
 
 # まとめ
 
