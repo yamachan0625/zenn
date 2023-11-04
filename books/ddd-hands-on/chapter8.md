@@ -14,7 +14,7 @@ title: '値オブジェクト'
 const BookId: string = 'xxxxxxxx';
 ```
 
-ドメインモデリングで作成した BookId.pu を振り返ってみましょう。確認したところ「BookId」として正しい値は **ISBN コード**であることが読み取れます。ISBN コードはいくつものルールの組み合わせによって構成されています。
+ドメインモデリングで作成した BookId.pu を振り返ってみましょう。確認したところ`BookId`として正しい値は **ISBN コード**であることが読み取れます。ISBN コードはいくつものルールの組み合わせによって構成されています。
 
 ```plantuml:StockManagement/Domain/models/Book/BookId/BookId.pu
 @startuml BookId
@@ -39,7 +39,7 @@ BookId.pu の内容に従い値を ISBN コードに修正しました。これ�
 const BookId: string = '9774167158057';
 ```
 
-と思いましたが、ISBN コードは「978」から始まらなければいけないところを間違えて「977」から始めてしまいました。正しくは`'9784167158057'`こちらです。さて、このミスに気づけた方はいるでしょうか？当然エラーも発生しません。また、この数字の羅列を見て ISBN コードであると理解できる方がどれほどいるでしょうか？つまり「BookId」は不正な状態で存在することが可能であり、正しい値が何かわからないという状況です。これではバグの温床になってしまいます。
+と思いましたが、ISBN コードは「978」から始まらなければいけないところを間違えて「977」から始めてしまいました。正しくは`'9784167158057'`こちらです。さて、このミスに気づけた方はいるでしょうか？当然エラーも発生しません。また、この数字の羅列を見て ISBN コードであると理解できる方がどれほどいるでしょうか？つまり`BookId`は不正な状態で存在することが可能であり、正しい値が何かわからないという状況です。これではバグの温床になってしまいます。
 
 この問題を値オブジェクトは解決します。
 
@@ -64,7 +64,7 @@ let value = 'value';
 value = value + ' changed'; // 新しい文字列 'value changed' を作成
 ```
 
-この例では、value 変数は最初に 'value' という値を参照しています。その後、value + ' changed' によって新しい値 'value changed' が作成され、value 変数はこの新しい値を参照するようになります。重要な点は、元の値 'value' そのものが変更されたわけではなく、代わりに新しい値が'value changed'が作成されたということです。これは値が不変であることを意味します。
+この例では、value 変数は最初に 'value' という値を参照しています。その後、value + ' changed' によって新しい値 'value changed' が作成され、value 変数はこの新しい値を参照するようになります。重要な点は、元の値 'value' そのものが変更されたわけではなく、代わりに新しい値'value changed'が作成されたということです。これは値が不変であることを意味します。
 
 ### 値同士が等しいか比較できる
 
@@ -101,14 +101,14 @@ console.log(newValue); // 出力: "HELLO"
 
 値の特徴が確認できたので、値オブジェクトを実装してみましょう。
 
-まずは、 lodash を利用するためインストールしましょう。
+まずは、 必要なパッケージをインストールしましょう。
 
 ```bash:StockManagement/
-$ npm i lodash
+$ npm i lodash nanoid@3 #バージョンはは3系を指定してください
 $ npm i -D @types/lodash
 ```
 
-「BookId.ts」を作成し書いていきます。こちらが値オブジェクトのベースになります。
+`BookId.ts`を作成し書いていきます。こちらが値オブジェクトのベースになります。
 
 ```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
 import isEqual from 'lodash/isEqual';
@@ -161,7 +161,7 @@ console.log(bookId1.equals(bookId3)); // false
 ```
 
 :::message
-値オブジェクトの比較では必ず equals メソッドを利用しましょう。
+値オブジェクトの比較には必ず equals メソッドを利用しましょう。
 **値オブジェクトは値です**。以下のコードは`'9784167158057'.value === '9784167158057'.value`と同じで値の値(value)を取り出して比較を行なっており不自然です。
 
 ```js
@@ -188,7 +188,7 @@ console.log(bookId1.value); // "9784167158057"
 
 ## ビジネスルールの適用
 
-実装した値オブジェクトが値の特徴を満たしていることが確認できました。ですが、まだ未完成です。値オブジェクトの真髄は値にビジネスルールを値に適用できる点にあります。「BookId」に対してジネスルールを適用していきましょう。(バリデーション、変換のロジックの説明はここでは省略します。ロジックを読み解く必要はありません。)
+実装した値オブジェクトが値の特徴を満たしていることが確認できました。ですが、まだ未完成です。値オブジェクトの真髄は値にビジネスルールを値に適用できる点にあります。`BookId`に対してジネスルールを適用していきましょう。(バリデーション、変換のロジックの説明はここでは省略します。ロジックを読み解く必要はありません。)
 
 ```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
 import { isEqual } from 'lodash';
@@ -196,53 +196,35 @@ import { isEqual } from 'lodash';
 export class BookId {
   private readonly _value: string;
 
+  static MAX_LENGTH = 100;
+  static MIN_LENGTH = 10;
+
   constructor(value: string) {
-    this._value = this.validateAndConvert(value); // バリデーションのチェックと値の変換を行う
+    this.validate(value);
+    this._value = value;
   }
 
-  private MAX_LENGTH = 100;
-  private MIN_LENGTH = 10;
-
-  private validateAndConvert(isbn: string): string {
-    if (isbn.length < this.MIN_LENGTH || isbn.length > this.MAX_LENGTH) {
+  private validate(isbn: string): void {
+    if (isbn.length < BookId.MIN_LENGTH || isbn.length > BookId.MAX_LENGTH) {
       throw new Error('ISBNの文字数が不正です');
     }
 
-    // ISBNプレフィックス（もしあれば）とハイフンを除去
-    const cleanedIsbn = isbn.replace(/^ISBN-?|-/g, '');
-
-    if (cleanedIsbn.length === 10) {
-      // ISBN-10 を ISBN-13 に変換
-      return this.convertIsbn10ToIsbn13(cleanedIsbn);
-    } else if (cleanedIsbn.length === 13) {
-      // ISBN-13 のバリデーション
-      if (this.isValidIsbn13(cleanedIsbn)) {
-        return cleanedIsbn;
-      }
+    if (!this.isValidIsbn10(isbn) && !this.isValidIsbn13(isbn)) {
+      throw new Error('不正なISBNの形式です');
     }
-
-    throw new Error('不正なISBNの形式です');
   }
 
-  private convertIsbn10ToIsbn13(isbn10: string): string {
-    const prefix = '978';
-    const core = isbn10.substring(0, 9); // 最初の9文字を取得
-    const checksum = this.calculateIsbn13Checksum(prefix + core);
-    return prefix + core + checksum;
+  private isValidIsbn10(isbn10: string): boolean {
+    // ISBN-10 のバリデーションロジックを実装
+    // 仮に、10桁目がチェックディジットとして正しいと仮定します。
+    // 実際の実装ではここにチェックディジットを計算するロジックが必要です。
+    return isbn10.length === 10; // ここを実際のチェックディジット計算に置き換える
   }
 
   private isValidIsbn13(isbn13: string): boolean {
-    return isbn13.startsWith('978') || isbn13.startsWith('979');
-  }
-
-  private calculateIsbn13Checksum(isbn13: string): string {
-    let sum = 0;
-    for (let i = 0; i < 12; i++) {
-      const digit = parseInt(isbn13.charAt(i), 10);
-      sum += i % 2 === 0 ? digit : digit * 3;
-    }
-    const checksum = 10 - (sum % 10);
-    return checksum === 10 ? '0' : checksum.toString();
+    // ISBN-13 のバリデーションロジックを実装
+    // ここでは簡単な例を示しますが、実際にはより複雑なチェックが必要です
+    return isbn13.startsWith('978') && isbn13.length === 13;
   }
 
   equals(other: BookId): boolean {
@@ -254,36 +236,49 @@ export class BookId {
   }
 
   toISBN(): string {
-    // この例では 'ISBN978-4-16-715805-7' のような特定のフォーマットに限定
-    const isbnPrefix = this._value.substring(0, 3); // 最初の3桁 (978 または 979)
-    const groupIdentifier = this._value.substring(3, 4); // 国コードなど（1桁）
-    const publisherCode = this._value.substring(4, 6); // 出版者コード（2桁）
-    const bookCode = this._value.substring(6, 12); // 書籍コード（6桁）
-    const checksum = this._value.substring(12); // チェックディジット（1桁）
+    if (this._value.length === 10) {
+      // ISBNが10桁の場合の、'ISBN' フォーマットに変換します。
+      const groupIdentifier = this._value.substring(0, 1); // 国コードなど（1桁）
+      const publisherCode = this._value.substring(1, 3); // 出版者コード（2桁）
+      const bookCode = this._value.substring(3, 9); // 書籍コード（6桁）
+      const checksum = this._value.substring(9); // チェックディジット（1桁）
 
-    return `ISBN${isbnPrefix}-${groupIdentifier}-${publisherCode}-${bookCode}-${checksum}`;
+      return `ISBN${groupIdentifier}-${publisherCode}-${bookCode}-${checksum}`;
+    } else {
+      // ISBNが13桁の場合の、'ISBN' フォーマットに変換します。
+      const isbnPrefix = this._value.substring(0, 3); // 最初の3桁 (978 または 979)
+      const groupIdentifier = this._value.substring(3, 4); // 国コードなど（1桁）
+      const publisherCode = this._value.substring(4, 6); // 出版者コード（2桁）
+      const bookCode = this._value.substring(6, 12); // 書籍コード（6桁）
+      const checksum = this._value.substring(12); // チェックディジット（1桁）
+
+      return `ISBN${isbnPrefix}-${groupIdentifier}-${publisherCode}-${bookCode}-${checksum}`;
+    }
   }
 }
 
+
 ```
 
-まずコンストラクタでは `validateAndConvert` メソッドを使って入力された ISBN をバリデーションし、必要に応じて変換します。これにより **BookId は無効な ISBN を受け付けず、適切なフォーマットの ISBN だけ**が BookId オブジェクトとして作成されます。これにより、不正なデータがシステムに流入するリスクが軽減されます。
+まずコンストラクタでは `validate` メソッドを使って入力された ISBN をバリデーションします。これにより **BookId は無効な ISBN を受け付けず、適切なフォーマットの ISBN だけ**が BookId オブジェクトとして作成されます。これにより、不正なデータがシステムに流入するリスクが軽減されます。
 
 ```js
   constructor(value: string) {
-    this._value = this.validateAndConvert(value);
+    this.validate(value);
+    this._value = value;
   }
 ```
 
 :::message
-バリデーションを行う場合構文チェック等の前に文字数のチェックを先に行うことを推奨します。仮に文字列が 10 億桁だった場合、正規表現エンジンが読み込み負荷の重い処理を無駄に実行してしまい、パフォーマンスに影響が出る可能性があります。また、文字数のチェックを先に行うことで、正規表現のパターンを簡単にすることができます。
+バリデーションでは、構文チェック等の前に文字数のチェックを先に行うことを推奨します。仮に文字列が 10 億桁だった場合、正規表現エンジンが読み込み負荷の重い処理を無駄に実行してしまい、パフォーマンスに影響が出る可能性があります。また、文字数のチェックを先に行うことで、正規表現のパターンを簡単にすることができます。
 
 ```js
-  private validateAndConvert(isbn: string): string {
-    if (isbn.length < this.MIN_LENGTH || isbn.length > this.MAX_LENGTH) {
+  private validate(isbn: string): void {
+    if (isbn.length < BookId.MIN_LENGTH || isbn.length > BookId.MAX_LENGTH) {
       throw new Error('ISBNの文字数が不正です');
     }
-    ...
+    (省略)
+  }
 ```
 
 :::
@@ -291,15 +286,25 @@ export class BookId {
 BookId の値から ISBN コードへの変換を行う振る舞いを追加しています。これにより、**ISBN フォーマットへの変換ロジックを 値自身で管理(カプセル化)**することができ、保守性が向上します。
 
 ```js
- toISBN(): string {
-    // この例では 'ISBN978-4-16-715805-7' のような特定のフォーマットに限定
-    const isbnPrefix = this._value.substring(0, 3); // 最初の3桁 (978 または 979)
-    const groupIdentifier = this._value.substring(3, 4); // 国コードなど（1桁）
-    const publisherCode = this._value.substring(4, 6); // 出版者コード（2桁）
-    const bookCode = this._value.substring(6, 12); // 書籍コード（6桁）
-    const checksum = this._value.substring(12); // チェックディジット（1桁）
+  toISBN(): string {
+    if (this._value.length === 10) {
+      // ISBNが10桁の場合の、'ISBN' フォーマットに変換します。
+      const groupIdentifier = this._value.substring(0, 1); // 国コードなど（1桁）
+      const publisherCode = this._value.substring(1, 3); // 出版者コード（2桁）
+      const bookCode = this._value.substring(3, 9); // 書籍コード（6桁）
+      const checksum = this._value.substring(9); // チェックディジット（1桁）
 
-    return `ISBN${isbnPrefix}-${groupIdentifier}-${publisherCode}-${bookCode}-${checksum}`;
+      return `ISBN${groupIdentifier}-${publisherCode}-${bookCode}-${checksum}`;
+    } else {
+      // ISBNが13桁の場合の、'ISBN' フォーマットに変換します。
+      const isbnPrefix = this._value.substring(0, 3); // 最初の3桁 (978 または 979)
+      const groupIdentifier = this._value.substring(3, 4); // 国コードなど（1桁）
+      const publisherCode = this._value.substring(4, 6); // 出版者コード（2桁）
+      const bookCode = this._value.substring(6, 12); // 書籍コード（6桁）
+      const checksum = this._value.substring(12); // チェックディジット（1桁）
+
+      return `ISBN${isbnPrefix}-${groupIdentifier}-${publisherCode}-${bookCode}-${checksum}`;
+    }
   }
 ```
 
@@ -312,21 +317,13 @@ BookId の値から ISBN コードへの変換を行う振る舞いを追加し�
 それではテストを書いていきましょう。テストは「BookId.test.ts」に書いていきます。
 
 ```js:StockManagement/src/Domain/models/Book/BookId/BookId.test.ts
-
 import { BookId } from './BookId';
 
 describe('BookId', () => {
   // 正常系
   test('有効なフォーマットの場合正しい変換結果を期待', () => {
-    expect(new BookId('ISBN978-4-16-715805-7').value).toBe('9784167158057');
-    expect(new BookId('978-4-16-715805-7').value).toBe('9784167158057');
     expect(new BookId('9784167158057').value).toBe('9784167158057');
-  });
-
-  test('旧ISBN(10桁)で入力された場合978を頭に追加した新ISBNに変換される', () => {
-    const isbn10 = '4167158051';
-    const bookId = new BookId(isbn10);
-    expect(bookId.value).toBe('9784167158057'); // 正しい変換結果を期待
+    expect(new BookId('4167158051').value).toBe('4167158051');
   });
 
   test('equals', () => {
@@ -337,9 +334,13 @@ describe('BookId', () => {
     expect(bookId1.equals(bookId3)).toBeFalsy();
   });
 
-  test('toISBN', () => {
+  test('toISBN() 13桁', () => {
     const bookId = new BookId('9784167158057');
     expect(bookId.toISBN()).toBe('ISBN978-4-16-715805-7');
+  });
+  test('toISBN() 10桁', () => {
+    const bookId = new BookId('4167158051');
+    expect(bookId.toISBN()).toBe('ISBN4-16-715805-1');
   });
 
   // 異常系
@@ -365,26 +366,556 @@ jest コマンドでテストを実行し、テストが成功することを確
 
 ```bash:StockManagement/
 $ jest
-
  PASS  src/Domain/models/Book/BookId/BookId.test.ts
   BookId
-    ✓ 有効なフォーマットの場合正しい変換結果を期待 (6 ms)
-    ✓ 旧ISBN(10桁)で入力された場合978を頭に追加した新ISBNに変換される (1 ms)
+    ✓ 有効なフォーマットの場合正しい変換結果を期待 (11 ms)
     ✓ equals (1 ms)
-    ✓ toISBN
-    ✓ 不正な文字数の場合にエラーを投げる (17 ms)
-    ✓ 不正なフォーマットの場合にエラーを投げる (6 ms)
+    ✓ toISBN() 13桁
+    ✓ toISBN() 10桁
+    ✓ 不正な文字数の場合にエラーを投げる (46 ms)
+    ✓ 不正なフォーマットの場合にエラーを投げる (4 ms)
 ```
 
-以上で「BookId」値オブジェクトの実装は完了です。ビジネスロジックを値にカプセル化し、テストによって品質を担保することができました。そして最初に値が抱えていた「**不正な状態で存在することが可能であり、正しい値が何かわからない**」という問題が解決されます。
+以上で`BookId`値オブジェクトの実装は完了です。ビジネスロジックを値にカプセル化し、テストによって品質を担保することができました。そして最初に値が抱えていた「**不正な状態で存在することが可能であり、正しい値が何かわからない**」という問題が解決されます。
 
-# その他の値オブジェクトの実装
+# プリミティブな値を値オブジェクトにする基準
 
-- 値オブジェクトにする基準
-- 値オブジェクトの実装に型によるメリットの説明入れる
+値オブジェクトの素晴らしさを実感できたと思います。ですが、値オブジェクトの実装にはコストがかかるため、すべての値を値オブジェクトにするかどうかは慎重に判断する必要があります。そこで、値オブジェクトに適した値の特徴を確認しましょう。
+
+- **意味のある単一の概念を表す値**
+  通貨、距離、時間、範囲など、単一の概念や複数の関連する値を一つの単位として表現したい場合、それらの値の一貫性を保持しやすくなります。例えば、金額と通貨を一緒に扱うことで、通貨の変換や計算の一貫性が保たれます。
+- **ビジネスルールを持つ**
+  オブジェクトが独自のバリデーションルールやドメイン特有のビジネスロジック（例：メールアドレスの形式、電話番号の形式）を必要とする場合、それらのデータの正確性が保たれます。
+- **再利用性**
+  同じ値がドメイン内の複数の箇所で必要な場合、再利用できることにより開発の効率が向上します。これは新しい機能の追加や、既存機能の拡張が容易になります。
+
+上記の特徴やメリットと、実装コストを比較した上で導入するかどうかを判断しましょう。
+
+:::message
+
+> すべての値を値オブジェクトにするかどうかは慎重に判断する必要があります
+
+TypeScript においては、型安全性の観点でコストを払っても全ての値を値オブジェクトとして実装するメリットがあると考えます。TypeScript には**名前付き引数**がないため。プリミティブな型を利用すると以下のような問題が起きる可能性があります。
+
+```js
+class Person {
+  constructor(
+    public firstName: string,
+    public lastName: string,
+    public email: string,
+    public phoneNumber: string,
+  ) {}
+}
+
+const person = new Person(
+  'John',
+  'Doe',
+  '09012341234', // emailとphoneNumberの順番を間違えてしまった。が、エラーが出ないため気づけない。
+  'test@test.com',
+);
+
+```
+
+全ての値を値オブジェクトとして定義することで、コンパイル時にエラーが出るため、間違いに気づくことができます。
+
+```js
+class Person {
+  constructor(
+    public firstName: FirstName,
+    public lastName: LastName,
+    public email: Email,
+    public phoneNumber: PhoneNumber,
+  ) {}
+}
+
+new Person(
+  new FirstName('John'),
+  new LastName('Doe'),
+  new PhoneNumber('09012341234'), // エラーが出て順序の間違いに気づく
+  new Email('test@test.com'),
+);
+```
+
+:::
+
+# 値オブジェクトのリファクタリング
+
+次はリファクタリングを行いましょう。ここでは共通処理を抽象化します。例えば、値オブジェクトの等価性を比較する equals メソッドは、すべての値オブジェクトで同じ実装を行う必要があります。これは、値オブジェクトの実装を重複させることになります。そこで、値オブジェクトの共通処理を抽象化することで、値オブジェクトの実装を簡潔にすることができます。
+それでは全ての値オブジェクトが継承する 共通クラス`ValueObject` を作成します。
+
+```js:StockManagement/src/Domain/models/shared/ValueObject.ts
+import { isEqual } from 'lodash';
+
+export abstract class ValueObject<T, U> {
+  // @ts-expect-error
+  private _type: U;
+  protected readonly _value: T;
+
+  constructor(value: T) {
+    this.validate(value);
+    this._value = value;
+  }
+
+  protected abstract validate(value: T): void;
+
+  get value(): T {
+    return this._value;
+  }
+
+  equals(other: ValueObject<T, U>): boolean {
+    return isEqual(this._value, other._value);
+  }
+}
+
+
+```
+
+:::message
+
+どこからも参照されてメンバ変数`_type`が定義されている理由を説明します。
+
+```js
+export abstract class ValueObject<T, U> {
+  // @ts-expect-error
+  private _type: U;
+  (省略)
+}
+```
+
+TypeScript は**構造的型付け** (Structural Typing) を採用しているため、型の互換性はその型が持つ構造 (プロパティやメソッド) に基づいて判断されます。
+例えば、以下の二つのクラスがあるとします。
+
+```js
+class CustomerId {
+  constructor(public readonly id: string) {}
+}
+
+class OrderId {
+  constructor(public readonly id: string) {}
+}
+
+const print = (customerId: CustomerId) => {
+  console.log(customerId.id);
+}
+
+print(new OrderId('1')); // OrderIdを渡してもエラーにならない
+```
+
+これらは同じ構造を持っているため、TypeScript はこれらの型を同等とみなします。これは意図しないバグを引き起こす可能性があります。たとえば、CustomerId を期待する関数に OrderId を渡すことができてしまいます。このような型の混同を防ぐために、`_type` のような専用のプロパティを追加します。これにより、構造的には同じでも、このプライベートプロパティのおかげで異なる型として認識させることができます。
+
+:::
+
+次に、`BookId`クラスを`ValueObject`を継承するようにリファクタリングします。共通の処理が`ValueObject`に移動したため、`BookId`クラスは自身のビジネスロジックのみを実装することができ、簡潔になりました。
+
+```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
+import { ValueObject } from 'Domain/models/shared/ValueObject';
+
+export class BookId extends ValueObject<string, 'BookId'> {
+  static MAX_LENGTH = 100;
+  static MIN_LENGTH = 10;
+
+  constructor(value: string) {
+    super(value);
+  }
+  protected validate(isbn: string): void {
+   (省略)
+  }
+  private isValidIsbn10(isbn10: string): boolean {
+   (省略)
+  }
+  private isValidIsbn13(isbn13: string): boolean {
+   (省略)
+  }
+  toISBN(): string {
+   (省略)
+  }
+}
+
+```
+
+リファクタリングを行ったのでテストを実行し、テストが成功することを確認します。
+
+```bash:StockManagement/
+$ jest
+ PASS  src/Domain/models/Book/BookId/BookId.test.ts
+```
+
+# 全ての値オブジェクトの実装
+
+それではここまでの知識を用いて、全ての値オブジェクトを実装していきましょう。それぞれの細かい説明はここでは省略しますが、基本的な考え方、実装の流れ、テストの書き方は`BookId`と同じです。
+
+:::details Price
+
+```js:StockManagement/src/Domain/models/Book/Price/Price.ts
+import { ValueObject } from 'Domain/models/shared/ValueObject';
+
+interface PriceValue {
+  amount: number;
+  currency: 'JPY'; // USD などの通貨を追加する場合はここに追加します
+}
+
+export class Price extends ValueObject<PriceValue, 'Price'> {
+  static readonly MAX = 1000000;
+  static readonly MIN = 1;
+
+  constructor(value: PriceValue) {
+    super(value);
+  }
+
+  protected validate(value: PriceValue): void {
+    if (value.currency !== 'JPY') {
+      throw new Error('現在は日本円のみを扱います。');
+    }
+
+    if (value.amount < Price.MIN || value.amount > Price.MAX) {
+      throw new Error(
+        `価格は${Price.MIN}円から${Price.MAX}円の間でなければなりません。`
+      );
+    }
+  }
+
+  get amount(): PriceValue['amount'] {
+    return this.value.amount;
+  }
+
+  get currency(): PriceValue['currency'] {
+    return this.value.currency;
+  }
+}
+
+```
+
+```js:StockManagement/src/Domain/models/Book/Price/Price.test.ts
+import { Price } from './Price';
+
+describe('Price', () => {
+  // 正常系
+  it('正しい値と通貨コードJPYで有効なPriceを作成する', () => {
+    const validAmount = 500;
+    const price = new Price({ amount: validAmount, currency: 'JPY' });
+    expect(price.amount).toBe(validAmount);
+    expect(price.currency).toBe('JPY');
+  });
+
+  // 異常系
+  it('無効な通貨コードの場合エラーを投げる', () => {
+    const invalidCurrency = 'USD';
+    expect(() => {
+      // @ts-expect-error テストのために無効な値を渡す
+      new Price({ amount: 500, currency: invalidCurrency });
+    }).toThrow('現在は日本円のみを扱います。');
+  });
+
+  it('MIN未満の値でPriceを生成するとエラーを投げる', () => {
+    const lessThanMin = Price.MIN - 1;
+    expect(() => {
+      new Price({ amount: lessThanMin, currency: 'JPY' });
+    }).toThrow(
+      `価格は${Price.MIN}円から${Price.MAX}円の間でなければなりません。`
+    );
+  });
+
+  it('MAX超の値でPriceを生成するとエラーを投げる', () => {
+    const moreThanMax = Price.MAX + 1;
+    expect(() => {
+      new Price({ amount: moreThanMax, currency: 'JPY' });
+    }).toThrow(
+      `価格は${Price.MIN}円から${Price.MAX}円の間でなければなりません。`
+    );
+  });
+});
+```
+
+:::
+
+:::details Title
+
+```js:StockManagement/src/Domain/models/Book/Title/Title.ts
+import { ValueObject } from 'Domain/models/shared/ValueObject';
+
+type TitleValue = string;
+export class Title extends ValueObject<TitleValue, 'Title'> {
+  static readonly MAX_LENGTH = 1000;
+  static readonly MIN_LENGTH = 1;
+
+  constructor(value: TitleValue) {
+    super(value);
+  }
+
+  protected validate(value: TitleValue): void {
+    if (value.length < Title.MIN_LENGTH || value.length > Title.MAX_LENGTH) {
+      throw new Error(
+        `タイトルは${Title.MIN_LENGTH}文字以上、${Title.MAX_LENGTH}文字以下でなければなりません。`
+      );
+    }
+  }
+}
+
+
+```
+
+```js:StockManagement/src/Domain/models/Book/Title/Title.test.ts
+import { Title } from './Title';
+
+describe('Title', () => {
+  test('Titleが1文字で作成できる', () => {
+    expect(new Title('a').value).toBe('a');
+  });
+
+  test('Titleが1000文字で作成できる', () => {
+    const longTitle = 'a'.repeat(1000);
+    expect(new Title(longTitle).value).toBe(longTitle);
+  });
+
+  test('最小長以上の値でTitleを生成するとエラーを投げる', () => {
+    expect(() => new Title('')).toThrow(
+      'タイトルは1文字以上、1000文字以下でなければなりません。'
+    );
+  });
+
+  test('最大長以上の値でTitleを生成するとエラーを投げる', () => {
+    const tooLongTitle = 'a'.repeat(1001);
+    expect(() => new Title(tooLongTitle)).toThrow(
+      'タイトルは1文字以上、1000文字以下でなければなりません。'
+    );
+  });
+});
+
+
+```
+
+:::
+
+:::details StockId
+
+```js:StockManagement/src/Domain/models/Book/Stock/StockId.ts
+import { ValueObject } from 'Domain/models/shared/ValueObject';
+import { nanoid } from 'nanoid';
+
+type StockIdValue = string;
+export class StockId extends ValueObject<StockIdValue, 'StockId'> {
+  static readonly MAX_LENGTH = 100;
+  static readonly MIN_LENGTH = 1;
+
+  constructor(value: StockIdValue = nanoid()) {
+    super(value);
+  }
+
+  protected validate(value: StockIdValue): void {
+    if (
+      value.length < StockId.MIN_LENGTH ||
+      value.length > StockId.MAX_LENGTH
+    ) {
+      throw new Error(
+        `StockIdは${StockId.MIN_LENGTH}文字以上、${StockId.MAX_LENGTH}文字以下でなければなりません。`
+      );
+    }
+  }
+}
+
+```
+
+```js:StockManagement/src/Domain/models/Book/Stock/StockId.test.ts
+import { StockId } from './StockId';
+
+// nanoid() をモックする
+jest.mock('nanoid', () => ({
+  nanoid: () => 'testIdWithExactLength',
+}));
+
+describe('StockId', () => {
+  test('デフォルトの値でStockIdを生成する', () => {
+    const stockId = new StockId();
+    expect(stockId.value).toBe('testIdWithExactLength');
+  });
+
+  test('指定された値でStockIdを生成する', () => {
+    const value = 'customId';
+    const stockId = new StockId(value);
+    expect(stockId.value).toBe(value);
+  });
+
+  test('最小長以下の値でStockIdを生成するとエラーを投げる', () => {
+    const shortValue = '';
+    expect(() => new StockId(shortValue)).toThrowError(
+      new Error(
+        `StockIdは${StockId.MIN_LENGTH}文字以上、${StockId.MAX_LENGTH}文字以下でなければなりません。`
+      )
+    );
+  });
+
+  test('最大長以上の値でStockIdを生成するとエラーを投げる', () => {
+    const longValue = 'a'.repeat(StockId.MAX_LENGTH + 1);
+    expect(() => new StockId(longValue)).toThrowError(
+      new Error(
+        `StockIdは${StockId.MIN_LENGTH}文字以上、${StockId.MAX_LENGTH}文字以下でなければなりません。`
+      )
+    );
+  });
+});
+
+```
+
+:::
+
+:::details QuantityAvailable
+
+```js:StockManagement/src/Domain/models/Book/Stock/QuantityAvailable.ts
+import { ValueObject } from 'Domain/models/shared/ValueObject';
+
+type QuantityAvailableValue = number;
+export class QuantityAvailable extends ValueObject<
+  QuantityAvailableValue,
+  'QuantityAvailable'
+> {
+  static readonly MAX: number = 1000000;
+  static readonly MIN: number = 0;
+
+  constructor(value: QuantityAvailableValue) {
+    super(value);
+  }
+
+  protected validate(value: QuantityAvailableValue): void {
+    if (value < QuantityAvailable.MIN || value > QuantityAvailable.MAX) {
+      throw new Error(
+        `在庫数は${QuantityAvailable.MIN}から${QuantityAvailable.MAX}の間でなければなりません。`
+      );
+    }
+  }
+}
+
+```
+
+```js:StockManagement/src/Domain/models/Book/Stock/QuantityAvailable.test.ts
+import { QuantityAvailable } from './QuantityAvailable';
+
+describe('QuantityAvailable', () => {
+  // 正常系
+  it('許容される範囲内の在庫数を設定できる', () => {
+    const validQuantityAvailable = 500;
+    const quantity = new QuantityAvailable(validQuantityAvailable);
+    expect(quantity.value).toBe(validQuantityAvailable);
+  });
+
+  // 異常系
+  it('MIN未満の値でQuantityAvailableを生成するとエラーを投げる', () => {
+    const lessThanMin = QuantityAvailable.MIN - 1;
+    expect(() => new QuantityAvailable(lessThanMin)).toThrow(
+      `在庫数は${QuantityAvailable.MIN}から${QuantityAvailable.MAX}の間でなければなりません。`
+    );
+  });
+
+  it('MAX超の値でQuantityAvailableを生成するとエラーを投げる', () => {
+    const moreThanMax = QuantityAvailable.MAX + 1;
+    expect(() => new QuantityAvailable(moreThanMax)).toThrow(
+      `在庫数は${QuantityAvailable.MIN}から${QuantityAvailable.MAX}の間でなければなりません。`
+    );
+  });
+});
+
+```
+
+:::
+
+:::details Status
+
+```js:StockManagement/src/Domain/models/Book/Stock/Status.ts
+import { ValueObject } from 'Domain/models/shared/ValueObject';
+
+export enum StatusEnum {
+  PreSale = 'PreSale',
+  OnSale = 'OnSale',
+  Discontinued = 'Discontinued',
+}
+export type StatusLabel = '販売前' | '販売中' | '販売停止';
+
+type StatusValue = StatusEnum;
+export class Status extends ValueObject<StatusValue, 'Status'> {
+  constructor(value: StatusValue) {
+    super(value);
+  }
+
+  protected validate(value: StatusValue): void {
+    if (!Object.values(StatusEnum).includes(value)) {
+      throw new Error('無効なステータスです。');
+    }
+  }
+
+  toLabel(): StatusLabel {
+    switch (this._value) {
+      case StatusEnum.PreSale:
+        return '販売前';
+      case StatusEnum.OnSale:
+        return '販売中';
+      case StatusEnum.Discontinued:
+        return '販売停止';
+    }
+  }
+}
+
+
+```
+
+```js:StockManagement/src/Domain/models/Book/Stock/Status.test.ts
+import { Status, StatusEnum } from './Status';
+
+describe('Statusクラスのテスト', () => {
+  it('有効なステータスでインスタンスが生成されること', () => {
+    expect(new Status(StatusEnum.PreSale).value).toBe(StatusEnum.PreSale);
+    expect(new Status(StatusEnum.OnSale).value).toBe(StatusEnum.OnSale);
+    expect(new Status(StatusEnum.Discontinued).value).toBe(
+      StatusEnum.Discontinued
+    );
+  });
+
+  it('無効なステータスでエラーが投げられること', () => {
+    const invalidStatus = 'invalid' as StatusEnum; // テストのために無効な値を渡す
+    expect(() => new Status(invalidStatus)).toThrow('無効なステータスです。');
+  });
+
+  describe('toLabel()', () => {
+    it('ステータスPreSaleが「販売前」に変換されること', () => {
+      const status = new Status(StatusEnum.PreSale);
+      expect(status.toLabel()).toBe('販売前');
+    });
+
+    it('ステータスOnSaleが「販売中」に変換されること', () => {
+      const status = new Status(StatusEnum.OnSale);
+      expect(status.toLabel()).toBe('販売中');
+    });
+
+    it('ステータスDiscontinuedが「販売停止」に変換されること', () => {
+      const status = new Status(StatusEnum.Discontinued);
+      expect(status.toLabel()).toBe('販売停止');
+    });
+  });
+});
+
+```
+
+:::
+
+:::message
+値オブジェクトを全て手動で作成するのは大変な作業です。そこで、値オブジェクトを自動生成するツールを作成するか、ChatGPT などの自然言語処理を用いて、コードを**自動生成**することをおすすめします。
+:::
+
+最後に全値オブジェクトのテストを実行し、テストが成功することを確認します。
+
+```bash:StockManagement/
+$ jest
+```
+
+お疲れ様でした、以上で値オブジェクトの実装が全て完了しました。
 
 # まとめ
 
-```
+- 値オブジェクトは値である
+- 値オブジェクトを利用することで、不正な値が存在する可能性を減らすことができる
+- 値オブジェクト自身がドメイン内の値のドキュメントになる
 
-```
+本章では、値オブジェクトの実装方法と、値オブジェクトのメリットについて学びました。値オブジェクトは、ドメインの知識を表現するために欠かせない重要な概念です。本章では取り扱いませんでしたが、`StringValueObject`、`NumberValueObject`、 `EnumValueObject` など、もう一段抽象的なクラスを作成したり、プラスアルファの機能を追加するなどのカスタマイズも可能です。ぜひ、値オブジェクトを活用してください。
+次章は、値オブジェクトを利用して、エンティティを実装していきます。
+
+### これまでのコード
+
+https://github.com/yamachan0625/ddd-hands-on/tree/valueObject

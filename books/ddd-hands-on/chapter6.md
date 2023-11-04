@@ -205,7 +205,8 @@ package "書籍集約(BookAggregation)" {
     end note
 
     note bottom of QuantityAvailable
-        整数のみ許可
+        MAX = 1,000,000
+        MIN = 1
     end note
 
     note bottom of Price
@@ -260,7 +261,7 @@ package "書籍集約(BookAggregation)" {
 ```
 
 それでは、「option + D」で完成したドメインモデル図を確認してみましょう。
-![](https://storage.googleapis.com/zenn-user-upload/1153d97bdf79-20231022.png)
+![](https://storage.googleapis.com/zenn-user-upload/9d9952b53961-20231104.png)
 この図は、書籍集約のドメインモデルを視覚的に表現しており、各エンティティや属性、それらの関係性、そしてビジネスルールを明確に理解するのに役立ちます。この図により、機能の実装やドメインロジックのテストに効率的に取り組むことが可能になります。
 
 ## ディレクトリの分割
@@ -360,7 +361,8 @@ class "QuantityAvailable(在庫数)" as QuantityAvailable {
 }
 
 note bottom of QuantityAvailable
-    整数のみ許可
+    MAX = 1,000,000
+    MIN = 1
 end note
 
 @enduml
