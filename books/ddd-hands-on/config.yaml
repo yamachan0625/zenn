@@ -7,6 +7,7 @@ TypeScriptを使ってコードを書きながら、DDDの概念を実際のプ�
 topics: ["DDD", "ドメイン駆動設計", "TypeScript", "アジャイル", "アーキテクチャ"]
 published: false
 price: 0 # 有料の場合200〜5000
+toc_depth: 2
 # 本に含めるチャプターを順番に並べましょう
 chapters:
   - chapter1
