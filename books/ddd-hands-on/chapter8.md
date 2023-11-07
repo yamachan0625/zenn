@@ -4,9 +4,9 @@ title: '値オブジェクト'
 
 # 値オブジェクト(Value Object)とは
 
-値オブジェクトは、エンティティと並びドメインモデル(ドメインオブジェクト)の中心的な要素で、ドメイン内の様々な**値**の概念をモデル化するのに用いられます。
+値オブジェクトは、エンティティと並びドメインモデル(ドメインオブジェクト)の中心的な要素で、ドメイン内の様々な**値**の概念をモデル化するのに用いられます。例えば、名前、年齢、色などが挙げられます。
 
-# 値とは
+## 値とは
 
 ここで少し値とは？を考えてみましょう。これは 「xxxxxxxx」 という値で BookId という変数に代入されています。このコードは正しいように見えます。当然エラーも発生しません。では、変数 BookId の値として「xxxxxxxx」は正しいでしょうか？
 
@@ -14,7 +14,7 @@ title: '値オブジェクト'
 const BookId: string = 'xxxxxxxx';
 ```
 
-ドメインモデリングで作成した BookId.pu を振り返ってみましょう。確認したところ`BookId`として正しい値は **ISBN コード**であることが読み取れます。ISBN コードはいくつものルールの組み合わせによって構成されています。
+ドメインモデリングで作成した `BookId.pu` を振り返ってみましょう。確認したところ`BookId`として正しい値は **ISBN コード**であることが読み取れます。ISBN コードはいくつものルールの組み合わせによって構成されています。
 
 ```plantuml:StockManagement/Domain/models/Book/BookId/BookId.pu
 @startuml BookId
@@ -110,7 +110,7 @@ $ npm i lodash nanoid@3 #バージョンはは3系を指定してください
 $ npm i -D @types/lodash
 ```
 
-`BookId.ts`を作成し書いていきます。こちらが値オブジェクトのベースになります。
+`BookId.ts`を作成し実装していきます。以下が値オブジェクトのベースになります。
 
 ```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
 import isEqual from 'lodash/isEqual';
@@ -190,7 +190,7 @@ console.log(bookId1.value); // "9784167158057"
 
 ## ビジネスルールの適用
 
-実装した値オブジェクトが値の特徴を満たしていることが確認できました。ですが、まだ未完成です。値オブジェクトの真髄は値にビジネスルールを値に適用できる点にあります。`BookId`に対してジネスルールを適用していきましょう。(バリデーション、変換のロジックの説明はここでは省略します。ロジックを読み解く必要はありません。)
+実装した値オブジェクトが値の特徴を満たしていることが確認できました。ですが、まだ未完成です。今のままでは不正な ISBN で `BookId` を生成することが可能です。値オブジェクトの真髄は値にビジネスルールを値に適用できる点にあります。それでは、ビジネスルールを適用していきましょう。(バリデーション、変換のロジックの実装は省略させていただきます。)
 
 ```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
 import { isEqual } from 'lodash';
@@ -378,7 +378,7 @@ $ jest
     ✓ 不正なフォーマットの場合にエラーを投げる (4 ms)
 ```
 
-以上で`BookId`値オブジェクトの実装は完了です。ビジネスロジックを値にカプセル化し、テストによって品質を担保することができました。そして最初に値が抱えていた「**不正な状態で存在することが可能であり、正しい値が何かわからない**」という問題が解決されます。
+以上で`BookId`値オブジェクトの実装は完了です。ビジネスロジックを値にカプセル化し、テストによって品質を担保することができました。そして最初に値が抱えていた「**不正な状態で存在することが可能であり、正しい値が何かわからない**」という問題が解決することができました。
 
 # プリミティブな値を値オブジェクトにする基準
 
@@ -784,6 +784,18 @@ export class QuantityAvailable extends ValueObject<
       );
     }
   }
+
+  increment(amount: number): QuantityAvailable {
+    const newValue = this._value + amount;
+
+    return new QuantityAvailable(newValue);
+  }
+
+  decrement(amount: number): QuantityAvailable {
+    const newValue = this._value - amount;
+
+    return new QuantityAvailable(newValue);
+  }
 }
 
 ```
@@ -792,14 +804,12 @@ export class QuantityAvailable extends ValueObject<
 import { QuantityAvailable } from './QuantityAvailable';
 
 describe('QuantityAvailable', () => {
-  // 正常系
   it('許容される範囲内の在庫数を設定できる', () => {
     const validQuantityAvailable = 500;
     const quantity = new QuantityAvailable(validQuantityAvailable);
     expect(quantity.value).toBe(validQuantityAvailable);
   });
 
-  // 異常系
   it('MIN未満の値でQuantityAvailableを生成するとエラーを投げる', () => {
     const lessThanMin = QuantityAvailable.MIN - 1;
     expect(() => new QuantityAvailable(lessThanMin)).toThrow(
@@ -812,6 +822,44 @@ describe('QuantityAvailable', () => {
     expect(() => new QuantityAvailable(moreThanMax)).toThrow(
       `在庫数は${QuantityAvailable.MIN}から${QuantityAvailable.MAX}の間でなければなりません。`
     );
+  });
+
+  describe('increment', () => {
+    it('正の数を加算すると、在庫数が増加する', () => {
+      const initialQuantity = new QuantityAvailable(10);
+      const incrementAmount = 5;
+      const newQuantity = initialQuantity.increment(incrementAmount);
+
+      expect(newQuantity.value).toBe(15);
+    });
+
+    it('最大値を超える加算を試みるとエラーが発生する', () => {
+      const initialQuantity = new QuantityAvailable(QuantityAvailable.MAX);
+      const incrementAmount = 1;
+
+      expect(() => initialQuantity.increment(incrementAmount)).toThrow(
+        `在庫数は${QuantityAvailable.MIN}から${QuantityAvailable.MAX}の間でなければなりません。`
+      );
+    });
+  });
+
+  describe('decrement', () => {
+    it('正の数を減算すると、在庫数が減少する', () => {
+      const initialQuantity = new QuantityAvailable(10);
+      const decrementAmount = 5;
+      const newQuantity = initialQuantity.decrement(decrementAmount);
+
+      expect(newQuantity.value).toBe(5);
+    });
+
+    it('在庫数を負の数に減算しようとするとエラーが発生する', () => {
+      const initialQuantity = new QuantityAvailable(0);
+      const decrementAmount = 1;
+
+      expect(() => initialQuantity.decrement(decrementAmount)).toThrow(
+        `在庫数は${QuantityAvailable.MIN}から${QuantityAvailable.MAX}の間でなければなりません。`
+      );
+    });
   });
 });
 

@@ -129,7 +129,6 @@ package "書籍集約(BookAggregation)" {
 
     class "Stock(在庫)" as Stock << (E,green) Entity >> {
         StockId: StockId
-        BookId: BookId
         QuantityAvailable: 在庫数
         Status: ステータス
     }
@@ -252,7 +251,6 @@ package "書籍集約(BookAggregation)" {
     Book *-down- Price
 
     Stock *-down- StockId
-    Stock *-down- BookId
     Stock *-down- QuantityAvailable
     Stock *-down- Status
 }
@@ -376,7 +374,6 @@ end note
 
 class "Stock(在庫)" as Stock << (E,green) Entity >> {
     StockId: StockId
-    BookId: BookId
     QuantityAvailable: 在庫数
     Status: ステータス
 }
