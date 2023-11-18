@@ -162,7 +162,7 @@ package "書籍集約(BookAggregation)" {
     }
 
     class "Status(ステータス)" as Status {
-       + value: Enum { 販売前, 販売中, 販売停止 }
+        + value: Enum { InStock, LowStock, OutOfStock }
     }
 
     class "StockId" as StockId {
@@ -215,13 +215,13 @@ package "書籍集約(BookAggregation)" {
     end note
 
     note bottom of Stock
-	 - 初回作成時、ステータスは「販売前」から始まる。
-	 - 在庫数は0の場合は在庫切れ。
+        - 初回作成時、ステータスは「在庫切れ」から始まる。
+        - 在庫数は0の場合は在庫切れ。10以下の場合は残りわずか。それ以外は在庫あり。
     end note
 
     note bottom of Status
-        書籍のステータスは、 PreSale (販売前), OnSale (販売中),
-        Discontinued (販売停止)の3つ
+        在庫のステータスは、 InStock (在庫あり), LowStock (残りわずか),
+        OutOfStock (在庫切れ)の3つ
     end note
 }
 
@@ -372,18 +372,27 @@ end note
 
 @startuml Stock
 
+!include ./Status/Status.pu
+!include ./QuantityAvailable/QuantityAvailable.pu
+!include ./StockId/StockId.pu
+
 class "Stock(在庫)" as Stock << (E,green) Entity >> {
     StockId: StockId
     QuantityAvailable: 在庫数
     Status: ステータス
 }
 
+Stock *-down- StockId
+Stock *-down- QuantityAvailable
+Stock *-down- Status
+
 note bottom of Stock
-    - 初回作成時、ステータスは「販売前」から始まる。
-    - 在庫数は0の場合は在庫切れ。
+    - 初回作成時、ステータスは「在庫切れ」から始まる。
+    - 在庫数は0の場合は在庫切れ。10以下の場合は残りわずか。それ以外は在庫あり。
 end note
 
 @enduml
+
 ```
 
 :::details .../Book/Stock/StockId/StockId.pu
@@ -408,15 +417,16 @@ class "StockId" as StockId {
 @startuml Status
 
 class "Status(ステータス)" as Status {
-    + value: Enum { 販売前, 販売中, 販売停止 }
+    + value: Enum { InStock, LowStock, OutOfStock }
 }
 
 note bottom of Status
-    書籍のステータスは、 PreSale (販売前), OnSale (販売中),
-    Discontinued (販売停止)の3つ
+    在庫のステータスは、 InStock (在庫あり), LowStock (残りわずか),
+    OutOfStock (在庫切れ)の3つ
 end note
 
 @enduml
+
 ```
 
 :::

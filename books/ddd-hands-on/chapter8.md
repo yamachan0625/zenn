@@ -39,7 +39,9 @@ BookId.pu の内容に従い値を ISBN コードに修正しました。これ�
 const BookId: string = '9774167158057';
 ```
 
-と思いましたが、ISBN コードは「978」から始まらなければいけないところを間違えて「977」から始めてしまいました。正しくは`'9784167158057'`こちらです。さて、このミスに気づけた方はいるでしょうか？当然エラーも発生しません。また、この数字の羅列を見て ISBN コードであると理解できる方がどれほどいるでしょうか？つまり`BookId`は不正な状態で存在することが可能であり、正しい値が何かわからないという状況です。これではバグの温床になってしまいます。
+と思いましたが、ISBN コードは「978」から始まらなければいけないところを間違えて「977」から始めてしまいました。正しくは`'9784167158057'`こちらです。さて、このミスに気づけた方はいるでしょうか？当然エラーも発生しません。
+
+また、この数字の羅列を見て ISBN コードであると理解できる方がどれほどいるでしょうか？つまり`BookId`は不正な状態で存在することが可能であり、正しい値が何かわからないという状況です。これではバグの温床になってしまいます。
 
 この問題を値オブジェクトは解決します。
 
@@ -272,7 +274,9 @@ export class BookId {
 ```
 
 :::message
-バリデーションでは、構文チェック等の前に文字数のチェックを先に行うことを推奨します。仮に文字列が 10 億桁だった場合、正規表現エンジンが読み込み負荷の重い処理を無駄に実行してしまい、パフォーマンスに影響が出る可能性があります。また、文字数のチェックを先に行うことで、正規表現のパターンを簡単にすることができます。
+バリデーションでは、構文チェック等の前に文字数のチェックを先に行うことを推奨します。仮に文字列が 10 億桁だった場合、正規表現エンジンが読み込み負荷の重い処理を無駄に実行してしまい、パフォーマンスに影響が出る可能性があります。
+
+また、文字数のチェックを先に行うことで、正規表現のパターンを簡単にすることができます。
 
 ```js
   private validate(isbn: string): void {
@@ -397,7 +401,7 @@ $ jest
 
 > すべての値を値オブジェクトにするかどうかは慎重に判断する必要があります
 
-TypeScript においては、型安全性の観点でコストを払っても全ての値を値オブジェクトとして実装するメリットがあると考えます。TypeScript には**名前付き引数**がないため。プリミティブな型を利用すると以下のような問題が起きる可能性があります。
+TypeScript においては、型安全性の観点でコストを払っても全ての値を値オブジェクトとして実装するメリットがあると考えます。TypeScript には**名前付き引数**がないため、プリミティブな型を利用すると以下のような問題に気づくのが難しくなります。
 
 ```js
 class Person {
@@ -873,11 +877,11 @@ describe('QuantityAvailable', () => {
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 export enum StatusEnum {
-  PreSale = 'PreSale',
-  OnSale = 'OnSale',
-  Discontinued = 'Discontinued',
+  InStock = 'InStock',
+  LowStock = 'LowStock',
+  OutOfStock = 'OutOfStock',
 }
-export type StatusLabel = '販売前' | '販売中' | '販売停止';
+export type StatusLabel = '在庫あり' | '残りわずか' | '在庫切れ';
 
 type StatusValue = StatusEnum;
 export class Status extends ValueObject<StatusValue, 'Status'> {
@@ -893,12 +897,12 @@ export class Status extends ValueObject<StatusValue, 'Status'> {
 
   toLabel(): StatusLabel {
     switch (this._value) {
-      case StatusEnum.PreSale:
-        return '販売前';
-      case StatusEnum.OnSale:
-        return '販売中';
-      case StatusEnum.Discontinued:
-        return '販売停止';
+      case StatusEnum.InStock:
+        return '在庫あり';
+      case StatusEnum.LowStock:
+        return '残りわずか';
+      case StatusEnum.OutOfStock:
+        return '在庫切れ';
     }
   }
 }
@@ -909,13 +913,11 @@ export class Status extends ValueObject<StatusValue, 'Status'> {
 ```js:StockManagement/src/Domain/models/Book/Stock/Status.test.ts
 import { Status, StatusEnum } from './Status';
 
-describe('Statusクラスのテスト', () => {
+describe('Status', () => {
   it('有効なステータスでインスタンスが生成されること', () => {
-    expect(new Status(StatusEnum.PreSale).value).toBe(StatusEnum.PreSale);
-    expect(new Status(StatusEnum.OnSale).value).toBe(StatusEnum.OnSale);
-    expect(new Status(StatusEnum.Discontinued).value).toBe(
-      StatusEnum.Discontinued
-    );
+    expect(new Status(StatusEnum.InStock).value).toBe(StatusEnum.InStock);
+    expect(new Status(StatusEnum.OutOfStock).value).toBe(StatusEnum.OutOfStock);
+    expect(new Status(StatusEnum.LowStock).value).toBe(StatusEnum.LowStock);
   });
 
   it('無効なステータスでエラーが投げられること', () => {
@@ -924,22 +926,23 @@ describe('Statusクラスのテスト', () => {
   });
 
   describe('toLabel()', () => {
-    it('ステータスPreSaleが「販売前」に変換されること', () => {
-      const status = new Status(StatusEnum.PreSale);
-      expect(status.toLabel()).toBe('販売前');
+    it('ステータスInStockが「在庫あり」に変換されること', () => {
+      const status = new Status(StatusEnum.InStock);
+      expect(status.toLabel()).toBe('在庫あり');
     });
 
-    it('ステータスOnSaleが「販売中」に変換されること', () => {
-      const status = new Status(StatusEnum.OnSale);
-      expect(status.toLabel()).toBe('販売中');
+    it('ステータスOutOfStockが「在庫切れ」に変換されること', () => {
+      const status = new Status(StatusEnum.OutOfStock);
+      expect(status.toLabel()).toBe('在庫切れ');
     });
 
-    it('ステータスDiscontinuedが「販売停止」に変換されること', () => {
-      const status = new Status(StatusEnum.Discontinued);
-      expect(status.toLabel()).toBe('販売停止');
+    it('ステータスLowStockが「残りわずか」に変換されること', () => {
+      const status = new Status(StatusEnum.LowStock);
+      expect(status.toLabel()).toBe('残りわずか');
     });
   });
 });
+
 
 ```
 

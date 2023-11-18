@@ -4,7 +4,7 @@ title: 'エンティティ'
 
 # エンティティ (Entity) とは
 
-エンティティは、値オブジェクトと並びドメインモデル(ドメインオブジェクト)の中心的な要素で、ドメイン内の様々な**ビジネスの実体**の概念をモデル化するのに用いられます。例えば書籍、在庫、ユーザー、履歴などが挙げられます。
+エンティティは、値オブジェクトと並びドメインモデル(ドメインオブジェクト)の中心的な要素で、ドメイン内のさまざまな**ビジネスの実体**の概念をモデル化するのに用いられます。例えば書籍、在庫、ユーザー、履歴などが挙げられます。
 
 ## 値オブジェクトとの違い
 
@@ -28,7 +28,7 @@ class Person {
 
 // 山田太郎さんが誕生
 const person1 = new Person('1', '山田太郎', 0, '東京都');
-person1.age = 1; // 誕生日を迎え年齢が1歳になった。
+person1.age = 1; // 東京の山田太郎さんが誕生日を迎え、年齢が1歳になった。
 
 // 一意な識別子「personId」が同一であるため、同一のエンティティと見なされる
 console.log(person1); // Person { personId: '1', name: '山田太郎', age: 1, address: '東京都' }
@@ -58,11 +58,11 @@ console.log(bookId1.equals(bookId2)); // true
 
 ### 一意な識別子によって区別される
 
-先程説明した通り、エンティティはその一意な識別子によって区別されます。この識別子はエンティティが生成された瞬間に割り当てられ、そのライフサイクルの終わりまで変わることはありません。この識別子のおかげで、属性が時間と共に変化しても、エンティティの同一性は保たれ続けます。
+さきほど説明した通り、エンティティはその一意な識別子によって区別されます。この識別子はエンティティが生成された瞬間に割り当てられ、そのライフサイクルの終わりまで変わることはありません。この識別子のおかげで、属性が時間と共に変化しても、エンティティの同一性は保たれ続けます。
 
 ### 可変である
 
-エンティティは値オブジェクトとは反対に、その状態が変更可能です。属性や関連するオブジェクトが変更されることがあり、エンティティの状態はその内容を反映することができます。
+エンティティは値オブジェクトとは反対に、その状態が変更可能です。属性や関連するオブジェクトが変更されることがあり、エンティティの状態はその内容を反映できます。
 
 ### ライフサイクルがある
 
@@ -70,14 +70,14 @@ console.log(bookId1.equals(bookId2)); // true
 
 # エンティティの実装
 
-エンティティの特徴が確認できたので、実際に「Stock」エンティティを例にエンティティを実装していきましょう。まずはドメインモデリングで作成した Stock エンティティを振り返ってみましょう。Stock エンティティが持つ属性やビジネスルールは以下の通りです。
+エンティティの特徴が確認できたので、実際に「Stock」エンティティを例にエンティティを実装していきましょう。まずはドメインモデリングで作成した 「Stock」 エンティティを振り返ってみましょう。Stock エンティティが持つ属性やビジネスルールは以下の通りです。
 
 ```plantuml:StockManagement/Domain/models/Book/Stock/Stock.pu
 @startuml Stock
 
 !include ./Status/Status.pu
 !include ./QuantityAvailable/QuantityAvailable.pu
-!include ../BookId/BookId.pu
+!include ./StockId/StockId.pu
 
 class "Stock(在庫)" as Stock << (E,green) Entity >> {
     StockId: StockId
@@ -90,16 +90,17 @@ Stock *-down- QuantityAvailable
 Stock *-down- Status
 
 note bottom of Stock
-    - 初回作成時、ステータスは「販売前」から始まる。
-    - 在庫数は0の場合は在庫切れ。
+    - 初回作成時、ステータスは「在庫切れ」から始まる。
+    - 在庫数は0の場合は在庫切れ。10以下の場合は残りわずか。それ以外は在庫あり。
 end note
 
 @enduml
+
 ```
 
 ## 実装
 
-`Stock.ts`を作成し実装していきます。以下がエンティティのベースになります。
+それでは`Stock.ts`ファイルを作成し実装していきましょう。以下がエンティティのベースになります。
 
 ```js:StockManagement/Domain/models/Book/Stock/Stock.ts
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
@@ -108,7 +109,7 @@ import { StockId } from './StockId/StockId';
 
 export class Stock {
   private constructor(
-    private readonly _stockId: StockId,
+    private readonly _stockId: StockId, // 識別子は変更不可のためreadonlyにする
     private _quantityAvailable: QuantityAvailable,
     private _status: Status
   ) {}
@@ -117,48 +118,23 @@ export class Stock {
   static create() {
     const defaultStockId = new StockId(); // 自動ID採番
     const defaultQuantityAvailable = new QuantityAvailable(0);
-    const defaultStatus = new Status(StatusEnum.PreSale);
+    const defaultStatus = new Status(StatusEnum.OutOfStock);
 
     return new Stock(defaultStockId, defaultQuantityAvailable, defaultStatus);
   }
 
   delete() {
-    if (this.status.value === StatusEnum.OnSale) {
-      throw new Error('販売中の在庫は削除できません。');
+    if (this.status.value !== StatusEnum.OutOfStock) {
+      throw new Error('在庫がある場合削除できません。');
     }
   }
 
-  changeStatus(newStatus: Status) {
+  private changeStatus(newStatus: Status) {
     this._status = newStatus;
   }
 
-  // 在庫数を増やす
-  increaseQuantity(amount: number) {
-    if (amount < 0) {
-      throw new Error('増加量は0以上でなければなりません。');
-    }
-
-    const newQuantity = this.quantityAvailable.increment(amount).value;
-    this._quantityAvailable = new QuantityAvailable(newQuantity);
-  }
-
-  // 在庫数を減らす
-  decreaseQuantity(amount: number) {
-    if (amount < 0) {
-      throw new Error('減少量は0以上でなければなりません。');
-    }
-
-    const newQuantity = this.quantityAvailable.decrement(amount).value;
-    if (newQuantity < 0) {
-      throw new Error('減少後の在庫数が0未満になってしまいます。');
-    }
-
-    // 在庫数が0になったらステータスを販売停止にする
-    if (newQuantity === 0) {
-      this.changeStatus(new Status(StatusEnum.Discontinued));
-    }
-
-    this._quantityAvailable = new QuantityAvailable(newQuantity);
+  private changeQuantityAvailable(newQuantityAvailable: QuantityAvailable) {
+    this._quantityAvailable = newQuantityAvailable;
   }
 
   // エンティティの再構築
@@ -182,7 +158,6 @@ export class Stock {
     return this._status;
   }
 }
-
 
 ```
 
@@ -209,7 +184,7 @@ stock.stockId = new StockId('stockId2'); // StockIdはreadonlyなので変更で
 
 ### 可変である
 
-`change` 系メソッドを用いて、エンティティの状態を変更することができます。
+メソッドを用いて、エンティティの状態を変更することができます。
 
 ```js
 const stock = Stock.create(
@@ -237,7 +212,7 @@ stock.delete(省略);
 
 ## ビジネスルールの適用
 
-実装したエンティティはまだ未完成です。今のままではビジネスルールに反したエンティティのライフサイクルが発生してしまいます。例えば`在庫数が0`の状態でステータスが`販売中`のエンティティが生成できてしまいます。そこで、エンティティのライフサイクルにビジネスルールを適用する必要があります。それでは、ビジネスルールを適用していきましょう。
+実装したエンティティはまだ未完成です。今のままではビジネスルールに反したエンティティのライフサイクルが発生してしまいます。例えば`在庫数が0`の状態でステータスが`在庫あり`のエンティティが生成できてしまいます。そこで、エンティティのライフサイクルにビジネスルールを適用する必要があります。それでは、ビジネスルールを適用していきましょう。
 
 ```js:StockManagement/Domain/models/Book/Stock/Stock.ts
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
@@ -255,18 +230,18 @@ export class Stock {
   static create() {
     const defaultStockId = new StockId(); // 自動ID採番
     const defaultQuantityAvailable = new QuantityAvailable(0);
-    const defaultStatus = new Status(StatusEnum.PreSale);
+    const defaultStatus = new Status(StatusEnum.OutOfStock);
 
     return new Stock(defaultStockId, defaultQuantityAvailable, defaultStatus);
   }
 
   delete() {
-    if (this.status.value === StatusEnum.OnSale) {
-      throw new Error('販売中の在庫は削除できません。');
+    if (this.status.value !== StatusEnum.OutOfStock) {
+      throw new Error('在庫がある場合削除できません。');
     }
   }
 
-  changeStatus(newStatus: Status) {
+  private changeStatus(newStatus: Status) {
     this._status = newStatus;
   }
 
@@ -277,6 +252,11 @@ export class Stock {
     }
 
     const newQuantity = this.quantityAvailable.increment(amount).value;
+
+    // 在庫数が10以下ならステータスを残りわずかにする
+    if (newQuantity <= 10) {
+      this.changeStatus(new Status(StatusEnum.LowStock));
+    }
     this._quantityAvailable = new QuantityAvailable(newQuantity);
   }
 
@@ -291,9 +271,14 @@ export class Stock {
       throw new Error('減少後の在庫数が0未満になってしまいます。');
     }
 
-    // 在庫数が0になったらステータスを販売停止にする
+    // 在庫数が10以下ならステータスを残りわずかにする
+    if (newQuantity <= 10) {
+      this.changeStatus(new Status(StatusEnum.LowStock));
+    }
+
+    // 在庫数が0になったらステータスを在庫切れにする
     if (newQuantity === 0) {
-      this.changeStatus(new Status(StatusEnum.Discontinued));
+      this.changeStatus(new Status(StatusEnum.OutOfStock));
     }
 
     this._quantityAvailable = new QuantityAvailable(newQuantity);
@@ -321,10 +306,9 @@ export class Stock {
   }
 }
 
-
 ```
 
-`create` メソッドでは、デフォルトの値を設定しています。このデフォルトの値は、例えば在庫数は 0、ステータスは販売前というように、ビジネスルールによって決まった値です。このように、ビジネスルールとの整合性を保つことができます。
+`create` メソッドでは、デフォルトの値を設定しています。このデフォルトの値は、例えば在庫数は 0、ステータスは在庫切れというように、ビジネスルールによって決まった値です。このように、ビジネスルールとの整合性を保つことができます。
 
 ```js
  static create() {
@@ -340,17 +324,17 @@ export class Stock {
   }
 ```
 
-`delete` メソッドでは、「ステータスが販売中の在庫は削除できない」というビジネスルールを適用しています。このように、エンティティの状態を変更するメソッドの中で、ビジネスルールを適用することで、エンティティのライフサイクルにビジネスルールを適用することができます。
+`delete` メソッドでは、「ステータスが在庫切れの在庫は削除できない」というビジネスルールを適用しています。このように、エンティティの状態を変更するメソッドの中で、ビジネスルールを適用することで、エンティティのライフサイクルにビジネスルールを適用することができます。
 
 ```js
   delete() {
-    if (this.status.value === StatusEnum.OnSale) {
-      throw new Error('販売中の在庫は削除できません。');
+    if (this.status.value !== StatusEnum.OutOfStock) {
+      throw new Error('在庫がある場合削除できません。');
     }
   }
 ```
 
-`changeQuantityAvailable`メソッドは、`increaseQuantity`、`decreaseQuantity`メソッドに変更されました。エンティティのメソッドはドメインの振る舞いを反映したものであるべきです。この変更でより直感的に在庫数を増減できるようになりました。そして「在庫数が 0 になったらステータスを販売停止に変更する」というビジネスルールや、在庫数の整合性のルールを適用しています。
+`changeQuantityAvailable`メソッドは、`increaseQuantity`、`decreaseQuantity`メソッドに変更されました。エンティティのメソッドはドメインの振る舞いを反映したものであるべきです。この変更でより直感的に在庫数を増減できるようになりました。そして「在庫数が 0 になったらステータスを在庫切れに変更する」というビジネスルールや、在庫数の整合性のルールを適用しています。
 
 ```js
   // 在庫数を増やす
@@ -360,6 +344,11 @@ export class Stock {
     }
 
     const newQuantity = this.quantityAvailable.increment(amount).value;
+
+    // 在庫数が10以下ならステータスを残りわずかにする
+    if (newQuantity <= 10) {
+      this.changeStatus(new Status(StatusEnum.LowStock));
+    }
     this._quantityAvailable = new QuantityAvailable(newQuantity);
   }
 
@@ -374,21 +363,31 @@ export class Stock {
       throw new Error('減少後の在庫数が0未満になってしまいます。');
     }
 
-    // 在庫数が0になったら販売停止にする
+    // 在庫数が10以下ならステータスを残りわずかにする
+    if (newQuantity <= 10) {
+      this.changeStatus(new Status(StatusEnum.LowStock));
+    }
+
+    // 在庫数が0になったらステータスを在庫切れにする
     if (newQuantity === 0) {
-      this.changeStatus(new Status(StatusEnum.Discontinued));
+      this.changeStatus(new Status(StatusEnum.OutOfStock));
     }
 
     this._quantityAvailable = new QuantityAvailable(newQuantity);
   }
 ```
 
+:::message
+エンティティが持つ属性は private にして、必ずメソッドを通して変更するようにしましょう。属性を変更するメソッドにビジネスルールを適用することで、ビジネスルールの整合性が崩れるのを防ぐことができます。
+
+:::
+
 これらの実装により、エンティティにビジネスルールを適用することができました。
 
 # エンティティのテスト
 
 値オブジェクト同様、ビジネスルールが正しく実装されているかを保証するためにはテストは必須です。
-それではテストを書いていきましょう。テストは「Stock.test.ts」に書いていきます。
+それではテストを書いていきましょう。「Stock.test.ts」を作成し、書いていきます。
 
 ```js:StockManagement/Domain/models/Book/Stock/Stock.test.ts
 import { Stock } from './Stock';
@@ -403,8 +402,8 @@ jest.mock('nanoid', () => ({
 
 describe('Stock', () => {
   const stockId = new StockId('abc');
-  const quantityAvailable = new QuantityAvailable(10);
-  const status = new Status(StatusEnum.OnSale);
+  const quantityAvailable = new QuantityAvailable(100);
+  const status = new Status(StatusEnum.InStock);
 
   describe('create', () => {
     it('デフォルト値で在庫を作成する', () => {
@@ -416,19 +415,21 @@ describe('Stock', () => {
       expect(
         stock.quantityAvailable.equals(new QuantityAvailable(0))
       ).toBeTruthy();
-      expect(stock.status.equals(new Status(StatusEnum.PreSale))).toBeTruthy();
+      expect(
+        stock.status.equals(new Status(StatusEnum.OutOfStock))
+      ).toBeTruthy();
     });
   });
 
   describe('delete', () => {
-    it('在庫が販売中の場合はエラーを投げる', () => {
+    it('在庫ありの場合はエラーを投げる', () => {
       const stock = Stock.reconstruct(stockId, quantityAvailable, status);
 
-      expect(() => stock.delete()).toThrow('販売中の在庫は削除できません。');
+      expect(() => stock.delete()).toThrow('在庫がある場合削除できません。');
     });
 
-    it('在庫が販売中でない場合はエラーを投げない', () => {
-      const notOnSaleStatus = new Status(StatusEnum.Discontinued);
+    it('在庫なしなしの場合はエラーを投げない', () => {
+      const notOnSaleStatus = new Status(StatusEnum.OutOfStock);
       const stock = Stock.reconstruct(
         stockId,
         quantityAvailable,
@@ -445,7 +446,7 @@ describe('Stock', () => {
       stock.increaseQuantity(5);
 
       expect(
-        stock.quantityAvailable.equals(new QuantityAvailable(15))
+        stock.quantityAvailable.equals(new QuantityAvailable(105))
       ).toBeTruthy();
     });
 
@@ -464,7 +465,7 @@ describe('Stock', () => {
       stock.decreaseQuantity(5);
 
       expect(
-        stock.quantityAvailable.equals(new QuantityAvailable(5))
+        stock.quantityAvailable.equals(new QuantityAvailable(95))
       ).toBeTruthy();
     });
 
@@ -479,23 +480,32 @@ describe('Stock', () => {
     it('減少後の在庫数が0未満になる場合はエラーを投げる', () => {
       const stock = Stock.reconstruct(stockId, quantityAvailable, status);
 
-      expect(() => stock.decreaseQuantity(11)).toThrow();
+      expect(() => stock.decreaseQuantity(101)).toThrow();
     });
 
-    it('在庫数が0になったらステータスを販売停止にする', () => {
+    it('在庫数が0になったらステータスを在庫切れにする', () => {
       const stock = Stock.reconstruct(stockId, quantityAvailable, status);
-      stock.decreaseQuantity(10);
+      stock.decreaseQuantity(100);
 
       expect(
         stock.quantityAvailable.equals(new QuantityAvailable(0))
       ).toBeTruthy();
       expect(
-        stock.status.equals(new Status(StatusEnum.Discontinued))
+        stock.status.equals(new Status(StatusEnum.OutOfStock))
       ).toBeTruthy();
+    });
+
+    it('在庫数が10以下になったらステータスを残りわずかにする', () => {
+      const stock = Stock.reconstruct(stockId, quantityAvailable, status);
+      stock.decreaseQuantity(90);
+
+      expect(
+        stock.quantityAvailable.equals(new QuantityAvailable(10))
+      ).toBeTruthy();
+      expect(stock.status.equals(new Status(StatusEnum.LowStock))).toBeTruthy();
     });
   });
 });
-
 
 ```
 
@@ -508,7 +518,7 @@ jest コマンドでテストを実行し、テストが成功することを確
 $ jest Stock.test.ts
 ```
 
-以上で`Stock`エンティティの実装は完了です。ビジネスルールをクラス内にカプセル化し、`Stock`エンティティ自身がドキュメントの役割を果たすようになりました。さらに、ライフサイクルにおける整合性が保てるようになりました。
+お疲れ様でした、以上で`Stock`エンティティの実装は完了です。ビジネスルールをクラス内にカプセル化し、`Stock`エンティティ自身がドキュメントの役割を果たすようになりました。さらに、ライフサイクルにおける整合性が保てるようになりました。
 
 # まとめ
 
@@ -516,7 +526,7 @@ $ jest Stock.test.ts
 - エンティティ自身がドキュメントになる
 
 本章では、値オブジェクトとエンティティの違いとエンティティの実装方法について学びました。
-次章は、DDD において非常に重要で難しい概念である**集約**の説明を行い、集約ルートである**Book**エンティティを実装していきます。
+次章は、DDD において非常に重要で難しい概念である**集約**の説明を行い、**集約ルート**である**Book**ルートエンティティを実装していきます。
 
 ### これまでのコード
 
