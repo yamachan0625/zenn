@@ -53,7 +53,7 @@ const isDuplicateISBN = book.isDuplicateISBN(bookId);
 
 書籍自身が ISBN の重複チェックを行っていますが、自身の一意性（重複のないこと）を自身でチェックすることは、ドメインモデルの観点から見ると不自然です。通常、エンティティの一意性は外部のコンテキスト（たとえば、データベースやリポジトリ）によって管理されるべきです。エンティティ自身が自分の一意性を管理することは、役割と責任の観点から見ても不自然です。
 
-# 書籍重複チェックドのメインサービスの実装
+# 書籍重複チェックドメインサービスの実装
 
 このような不自然さを解消するために、ドメインサービスを利用します。
 それでは`Domain`ディレクトリ配下に`services/Book/ISBNDuplicationCheckDomainService/`ディレクトリを作成します。次に`ISBNDuplicationCheckDomainService.ts`というファイル作成し、ISBN の重複チェックを行う処理を移動してみましょう。
@@ -67,7 +67,7 @@ import { BookId } from 'Domain/models/Book/BookId/BookId';
 
 export class ISBNDuplicationCheckDomainService {
   async execute(isbn: BookId): Promise<boolean> {
-    // データベースに問い合わせて重複があるか確認する
+    // 本来は、データベースに問い合わせて重複があるか確認する。この章では省略。
     const isisDuplicateISBN = false;
 
     return isisDuplicateISBN;
@@ -75,7 +75,7 @@ export class ISBNDuplicationCheckDomainService {
 }
 ```
 
-本来はリポジトリを利用し、データベースに問い合わせて重複があるか確認する処理を実装しますが、ここでは簡略化のために単純に`false`を返すようにしています。 (次章リポジトリでデータベースへの問い合わせとテストの実装を行います)
+本来はリポジトリを利用し、データベースに問い合わせて重複があるか確認する処理を実装しますが、ここでは簡略化のために単純に結果のみ (false) を返すようにしています。 (次章リポジトリでデータベースへの問い合わせとテストの実装を行います)
 
 それではこのドメインサービスを利用するように変更してみます。
 

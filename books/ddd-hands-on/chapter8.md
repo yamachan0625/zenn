@@ -382,6 +382,8 @@ $ jest
     ✓ 不正なフォーマットの場合にエラーを投げる (4 ms)
 ```
 
+エラーなく成功すれば OK です。
+
 以上で`BookId`値オブジェクトの実装は完了です。ビジネスロジックを値にカプセル化し、テストによって品質を担保することができました。そして最初に値が抱えていた「**不正な状態で存在することが可能であり、正しい値が何かわからない**」という問題が解決することができました。
 
 # プリミティブな値を値オブジェクトにする基準
@@ -546,6 +548,8 @@ $ jest
  PASS  src/Domain/models/Book/BookId/BookId.test.ts
 ```
 
+エラーなく成功すれば OK です。
+
 # 全ての値オブジェクトの実装
 
 それではここまでの知識を用いて、全ての値オブジェクトを実装していきましょう。それぞれの細かい説明はここでは省略しますが、基本的な考え方、実装の流れ、テストの書き方は`BookId`と同じです。
@@ -703,7 +707,7 @@ export class StockId extends ValueObject<StockIdValue, 'StockId'> {
   static readonly MAX_LENGTH = 100;
   static readonly MIN_LENGTH = 1;
 
-  constructor(value: StockIdValue = nanoid()) {
+  constructor(value: StockIdValue = nanoid()) { // デフォルトではnanoidを利用しID生成
     super(value);
   }
 
