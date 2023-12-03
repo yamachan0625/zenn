@@ -18,6 +18,7 @@ title: '集約'
 # Book 集約の実装
 
 それでは、集約ルートである 「Book」 ルートエンティティを実装していきましょう。まずはドメインモデリングで作成した 「BookAggregation」 を振り返ってみましょう。値オブジェクトとエンティティ (Stock)を属性として持っていることがわかります。
+![](https://storage.googleapis.com/zenn-user-upload/9d9952b53961-20231104.png)
 
 ## デメテルの法則
 

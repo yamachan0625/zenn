@@ -205,9 +205,9 @@ describe('ISBNDuplicationCheckDomainService', () => {
 
 ### リポジトリのインターフェイス
 
-ドメインサービスでインフラストラクチャの概念であるリポジトリを直接利用する (依存する) ことはできません。そこで DIP (依存性逆転の原則) に従い、リポジトリの抽象、つまりインターフェイスを定義し、インターフェイスに依存させるようにする必要があります。
+ドメインサービスでインフラストラクチャの概念であるリポジトリを直接利用する (依存する) ことはできません。そこで **依存性逆転の原則 (DIP)** に従い、リポジトリの抽象、つまりインターフェイスを定義し、インターフェイスに具体的な実装を依存させるようにする必要があります。
 
-それでは、先にリポジトリのインターフェイスを作成しましょう。`/Domain/models/Book`ディレクトリ配下に、`IBookRepository.ts`というファイル作成し、リポジトリのインターフェイスを定義します。
+それではまずリポジトリのインターフェイスを作成しましょう。`/Domain/models/Book`ディレクトリ配下に、`IBookRepository.ts`というファイル作成し、ファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/Domain/models/Book/IBookRepository.ts
 import { Book } from './Book';
@@ -222,10 +222,10 @@ export interface IBookRepository {
 
 ```
 
-`ISBNDuplicationCheckDomainService`では`find`を利用します。`find`は`BookId`を受け取り、`Book`を返すメソッドです。`Book`が存在しない場合は`null`を返します。その他にも、`save`、`update`、`delete`といったメソッドを定義しています。これらのメソッドは、次章、`Book`の永続化を行うために利用します。
+`ISBNDuplicationCheckDomainService`では`find`メソッドを利用します。`find`は`BookId`を受け取り、`Book`を返すメソッドです。`Book`が存在しない場合は`null`を返します。その他にも、`save`、`update`、`delete`といったメソッドを定義しています。これらのメソッドは、次章、アプリケーションサービスで、`Book`の永続化を行うために利用します。
 
 :::message
-リポジトリは実際に利用するタイミング、もしくは利用することが決まっているメソッドのみを定義するようにしましょう。いつか使うだろうと思って何でも定義しておくと、インターフェイスが肥大化した挙句、実際に利用せずに放置されるといったことが起きてしまいます。
+リポジトリは実際に利用するタイミング、もしくは利用することが決まっているメソッドのみを定義するようにしましょう。いつか使うだろうと思って何でも定義しておくと、インターフェイスが肥大化した挙句、利用せずに放置されるといったことが起きてしまいます。
 :::
 
 ### リポジトリのインターフェイスを利用してみる
@@ -254,7 +254,7 @@ export class ISBNDuplicationCheckDomainService {
 
 ### ドメインサービスのテスト
 
-それではリポジトリを利用したケースのテストを書いていきましょう。`ISBNDuplicationCheckDomainService`では、リポジトリは抽象型に依存しているため、テスト用の軽量なリポジトリを用いてテストすることができます。
+それではリポジトリを利用したケースのテストを書いていきましょう。`ISBNDuplicationCheckDomainService`ではリポジトリを抽象型に依存させました。そのため、テスト用の軽量なリポジトリを用いてテストすることができます。
 
 まずは、インメモリを利用した軽量なリポジトリを実装しましょう。`src`ディレクトリ配下に、` Infrastructure/InMemory/Book`ディレクトリを作成し、`InMemoryBookRepository.ts `というファイルを作成し、以下のように実装します。
 
@@ -291,7 +291,7 @@ export class InMemoryBookRepository implements IBookRepository {
 
 ```
 
-このリポジトリはインメモリ上に集約をそのまま保存し、取得することができるだけの実装です。
+このリポジトリはインメモリ上に集約をそのまま保存し、取得することができるだけの簡単な実装です。
 それでは、作成した`InMemoryBookRepository`を利用して、テストを書いていきましょう。`ISBNDuplicationCheckDomainService.ts`と同じ階層に`ISBNDuplicationCheckDomainService.test.ts`というファイルを作成し、以下のように実装します。
 
 ```js:.../ISBNDuplicationCheckDomainService.test.ts
@@ -351,7 +351,7 @@ describe('ISBNDuplicationCheckDomainService', () => {
 
 ```
 
-`InMemoryBookRepository`を利用してテストを書くことで、テストのために固有のデータベースの実行環境を用意する必要がなく、テストのセットアップが簡単になりました。また、テストの実行速度も向上します。
+`InMemoryBookRepository`を利用してテストを書くことで、テストのためにデータベースの実行環境を用意する必要がなく、テストのセットアップが簡単になりました。また、テストの実行速度も向上します。
 
 jest コマンドでテストを実行し、テストが成功することを確認します。
 
@@ -363,7 +363,7 @@ $ jest ISBNDuplicationCheckDomainService.test.ts
 
 # Prisma を利用したリポジトリの実装
 
-それでは実際の実行環境用に、`Prisma`を利用したリポジトリを実装していきましょう。さきほど作成した`Infrastructure`ディレクトリ配下に、`Prisma/Book`ディレクトリを作成し、`PrismaBookRepository.ts`というファイルを作成します。
+それでは具体的な詳細である、`Prisma`を利用したリポジトリを実装していきましょう。さきほど作成した`Infrastructure`ディレクトリ配下に、`Prisma/Book`ディレクトリを作成し、`PrismaBookRepository.ts`というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
 import { $Enums, PrismaClient } from '@prisma/client';
@@ -475,7 +475,9 @@ export class PrismaBookRepository implements IBookRepository {
 }
 ```
 
-Prisma を利用し、`IBookRepository`のインターフェイスを元に、`save`、`update`、`delete`、`find`を実装しています。ここで重要なのは実装の詳細ではなく、インターフェイス`IBookRepository`の要件を満たす実装ができたことです。これにより、DB アクセスや ORM の詳細をドメイン層から隠蔽し、インフラストラクチャ層に閉じ込めることができました。
+Prisma を利用し、`IBookRepository`のインターフェイスを元に、`save`、`update`、`delete`、`find`を実装しています。また、`statusDataMapper`や`statusEnumMapper`といった、ドメイン層の型とデータベースの型を変換するためのメソッドを実装しています。
+
+ここで重要なのはリポジトリの実装の詳細ではなく、インターフェイス`IBookRepository`の要件を満たす実装ができたということです。これにより、DB アクセスや ORM の詳細をドメイン層から隠蔽し、インフラストラクチャ層に閉じ込めることができました。
 
 # リポジトリのテスト
 
@@ -630,7 +632,7 @@ describe('PrismaBookRepository', () => {
 
 :::message
 リポジトリを利用したテストでは、開発環境のデータベースにアクセスします。そのため、テストを実行する前に、`docker-compose.yml`で定義した`localdb`を起動しておく必要があります。
-また、`localdb`でリポジトリのテストを行うと、データベースのデータが初期化されてしまいます。本来であればテスト用にデータベースを用意することをオススメします。
+また、`localdb`でリポジトリのテスト時に、データベースのデータが初期化されてしまいます。本来であればテスト用にデータベースを用意すると良いでしょう。
 :::
 
 jest コマンドでテストを実行し、テストが成功することを確認します。
@@ -674,6 +676,9 @@ Prisma では、`PrismaClient`の`$transaction`メソッドを利用すること
 それでは`ApplicationService`に適用してみましょう。
 
 ```js:sample
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
 class ApplicationService {
   constructor(
     private repository: IDomainRepository,
@@ -693,7 +698,7 @@ class ApplicationService {
 
 ### インターフェイスの定義
 
-まずは、トランザクション管理用オブジェクトのインターフェイスを定義します。`src`ディレクトリに`Application/shared`ディレクトリを作成します。次に`ITransactionManager.ts`というファイルを作成し、以下のように実装します。
+まずは、抽象に依存させるように変更するためトランザクション管理用オブジェクトのインターフェイスを定義します。`src`ディレクトリに`Application/shared`ディレクトリを作成します。次に`ITransactionManager.ts`というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Application/shared/ITransactionManager.ts
 export interface ITransactionManager {
@@ -701,7 +706,7 @@ export interface ITransactionManager {
 }
 ```
 
-このインターフェイスはアプリケーションサービスで DI して利用することになります。
+このインターフェイスは以下のようにアプリケーションサービスで DI して利用することになります。
 
 ```js:sample
 import { ITransactionManager } from 'Application/shared/ITransactionManager';
