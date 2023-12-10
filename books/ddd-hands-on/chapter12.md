@@ -786,30 +786,25 @@ export class PrismaClientManager implements IDataAccessClientManager<Client> {
 `ITransactionManager`の`Prisma`を利用した実装です。
 
 ```js:StockManagement/src/Infrastructure/Prisma/PrismaTransactionManager.ts
-import { ITransactionManager } from 'Application/shared/ITransactionManager';
-import prisma from './prismaClient';
-import { PrismaClientManager } from './PrismaClientManager';
+import { ITransactionManager } from '../../Application/shared/ITransactionManager'
+import prisma from './prismaClient'
+import { PrismaClientManager } from './PrismaClientManager'
 
 export class PrismaTransactionManager implements ITransactionManager {
   constructor(private clientManager: PrismaClientManager) {}
 
   async begin<T>(callback: () => Promise<T>): Promise<T | undefined> {
     return await prisma.$transaction(async (transaction) => {
-      // トランザクション用のクライアントをセットする
-      this.clientManager.setClient(transaction);
+      this.clientManager.setClient(transaction)
 
-      try {
-        return await callback();
-      } catch (error) {
-        // リトライ処理やロギング処理が必要であれば入れる
-      } finally {
-        this.clientManager.setClient(prisma);
-      }
-    });
+      const res = await callback();
+      // リセット
+      this.clientManager.setClient(prisma);
+
+      return res;
+    })
   }
 }
-
-
 ```
 
 :::
