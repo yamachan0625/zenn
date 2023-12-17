@@ -56,7 +56,7 @@ app.listen(port, () => {
 $ npx ts-node src/Presentation/Express/index.ts
 ```
 
-ブラウザで `http://localhost:3000` にアクセスし、`Hello World!` が表示されればセットアップの完了です。
+ブラウザで `http://localhost:3000` にアクセスし、`Hello World!` が表示されれば環境のセットアップは完了です。
 
 ## 書籍登録 API の実装
 

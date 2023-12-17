@@ -141,13 +141,13 @@ module.exports = {
 };
 ```
 
-設定が完了したので、実際に不正な`import`を行い動作確認をしてみましょう。
+設定が完了したので、実際に不正な依存関係の`import`を行い動作確認をしてみましょう。
 
 ```js:stockManagement/src/Domain/models/Book/Book.ts
 import prisma from 'Infrastructure/Prisma/prismaClient';
 ```
 
-`Book.ts`に不正な`import`を追加しました。マウスカーソルを合わせると、`Unexpected path "Infrastructure/Prisma/prismaClient" imported in restricted zone. Domain層でInfrastructure層をimportしてはいけません。`というエラーが表示されます。
+ドメイン層の`Book.ts`にインフラストラクチャ層の`prisma`を`import`を追加しました。赤い波線にマウスカーソルを合わせると、`Unexpected path "Infrastructure/Prisma/prismaClient" imported in restricted zone. Domain層でInfrastructure層をimportしてはいけません。`というエラーが表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/256e76220aa0-20231210.png)
 
