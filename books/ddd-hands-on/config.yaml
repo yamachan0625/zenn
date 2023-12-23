@@ -10,12 +10,12 @@ price: 0 # 有料の場合200〜5000
 toc_depth: 2
 # 本に含めるチャプターを順番に並べましょう
 chapters:
-  - chapter1
-  - chapter2
-  - chapter3
-  - chapter4
-  - chapter5
-  - chapter6
+  - chapter1_intro
+  - chapter2_what_is_ddd
+  - chapter3_strategic_design
+  - chapter4_domain_modeling
+  - chapter5_event_storming
+  - chapter6_model
   - chapter7
   - chapter8
   - chapter9
