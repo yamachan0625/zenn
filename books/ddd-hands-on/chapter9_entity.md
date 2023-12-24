@@ -1,14 +1,14 @@
 ---
-title: 'エンティティ'
+title: 'エンティティ (Entity)'
 ---
 
-# エンティティ (Entity) とは
+# エンティティとは
 
-エンティティは、値オブジェクトと並びドメインモデル(ドメインオブジェクト)の中心的な要素で、ドメイン内のさまざまな**ビジネスの実体**の概念をモデル化するのに用いられます。例えば書籍、在庫、ユーザー、履歴などが挙げられます。
+エンティティは、値オブジェクトと並びドメインモデル (ドメインオブジェクト) の中心的な要素で、ドメイン内のさまざまな**ビジネスの実体**の概念をモデル化するのに用いられます。たとえばエンティティには書籍、在庫、ユーザー、履歴などが挙げられます。
 
 ## 値オブジェクトとの違い
 
-エンティティと値オブジェクトは、どちらもドメイン駆動設計（DDD）におけるドメインモデルの中心的な要素ですが、別物です。それらを区別する概念は **同一性** (Identity) にあります。
+エンティティと値オブジェクトは、どちらもドメインモデルの中心的な要素ですが、別物です。それらを区別する概念は **同一性** (Identity) にあります。
 
 ### エンティティの同一性
 
@@ -36,7 +36,7 @@ console.log(person1); // Person { personId: '1', name: '山田太郎', age: 1, a
 
 ### 値オブジェクトの同一性
 
-一方で、値オブジェクトはその属性によって同一性が定義されるものです。値オブジェクトには識別子がなく、その属性の値がすべてであり、それらの値が同じであれば、それは同じ値オブジェクトと見なされます。値オブジェクトの同一性は、それを構成する属性の値の組み合わせに依存します。たとえば、`BookId`を表す値オブジェクトが「9784167158057」という属性を持ち、もしほかの`BookId`値オブジェクトも全く同じ属性を持っていれば、それらは区別されず同じものとして扱われます。詳しくは前章 (値オブジェクト) で説明しています。
+一方で、値オブジェクトはその属性によって同一性が定義されるものです。値オブジェクトには識別子がなく、その属性の値がすべてであり、それらの値が同じであれば、それは同じ値オブジェクトと見なされます。値オブジェクトの同一性は、それを構成する属性の値の組み合わせに依存します。たとえば、`BookId`を表す値オブジェクトが「9784167158057」という属性を持ち、もしほかの`BookId`値オブジェクトもまったく同じ属性を持っていれば、それらは区別されず同じものとして扱われます。詳しくは`chapter08 値オブジェクト`で説明しています。
 
 ```js
 const bookId1 = new BookId('9784167158057');
@@ -70,9 +70,9 @@ console.log(bookId1.equals(bookId2)); // true
 
 # エンティティの実装
 
-エンティティの特徴が確認できたので、実際に「Stock」エンティティを例にエンティティを実装していきましょう。まずはドメインモデリングで作成した 「Stock」 エンティティを振り返ってみましょう。Stock エンティティが持つ属性やビジネスルールは以下の通りです。
+エンティティの特徴が確認できたので、実際に`Stock`エンティティを例にエンティティを実装していきましょう。まずはドメインモデリングで作成した`Stock`エンティティを振り返ってみましょう。`Stock`エンティティが持つ属性やビジネスルールは以下の通りです。
 
-```plantuml:StockManagement/Domain/models/Book/Stock/Stock.pu
+```plantuml:StockManagement/src/Domain/models/Book/Stock/Stock.pu
 @startuml Stock
 
 !include ./Status/Status.pu
@@ -100,9 +100,9 @@ end note
 
 ## 実装
 
-それでは`Stock.ts`ファイルを作成し実装していきましょう。以下がエンティティのベースになります。
+それでは`Stock.pu`と同じディレクトリに`Stock.ts`ファイルを作成し以下のように実装します。
 
-```js:StockManagement/Domain/models/Book/Stock/Stock.ts
+```js:StockManagement/src/Domain/models/Book/Stock/Stock.ts
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
 import { Status, StatusEnum } from './Status/Status';
 import { StockId } from './StockId/StockId';
@@ -115,25 +115,23 @@ export class Stock {
   ) {}
 
   // 新規エンティティの生成
-  static create() {
-    const defaultStockId = new StockId(); // 自動ID採番
-    const defaultQuantityAvailable = new QuantityAvailable(0);
-    const defaultStatus = new Status(StatusEnum.OutOfStock);
-
-    return new Stock(defaultStockId, defaultQuantityAvailable, defaultStatus);
+  static create(
+    stockId: StockId,
+    quantityAvailable: QuantityAvailable,
+    status: Status
+  ) {
+    return new Stock(stockId, quantityAvailable, status);
   }
 
-  delete() {
-    if (this.status.value !== StatusEnum.OutOfStock) {
-      throw new Error('在庫がある場合削除できません。');
-    }
+  public delete() {
+    // 削除時のロジックがあれば書く
   }
 
-  private changeStatus(newStatus: Status) {
+  public changeStatus(newStatus: Status) {
     this._status = newStatus;
   }
 
-  private changeQuantityAvailable(newQuantityAvailable: QuantityAvailable) {
+  public changeQuantityAvailable(newQuantityAvailable: QuantityAvailable) {
     this._quantityAvailable = newQuantityAvailable;
   }
 
@@ -162,7 +160,7 @@ export class Stock {
 ```
 
 :::message
-**private constructor** にしている理由は、**create メソッドと reconstruct メソッドのみでエンティティを生成することを強制**するためです。`create` メソッドでは、エンティティの生成時の制御 (ビジネスルールの適用) を行います。`reconstruct` メソッドは、データベースなどから読み込んだデータをもとにエンティティを再構築する際に使用します。`reconstruct` メソッド は本章では使用しません。詳しくはリポジトリの章 TODO で説明します。
+`private constructor`にしている理由は、**create メソッドと reconstruct メソッドのみでエンティティを生成することを強制**するためです。この後`create` メソッドでは、エンティティの生成時の制御 (ビジネスルールの適用) を行います。`reconstruct` メソッドは、データベースなどから読み込んだデータをもとにエンティティを再構築する際に使用します。`reconstruct` メソッドは`chapter12 リポジトリ`で利用します。
 
 :::
 
@@ -170,7 +168,7 @@ export class Stock {
 
 ### 一意な識別子によって区別される
 
-`StockId` は一意な識別子です。この `StockId` はエンティティの生成時に割り当てられ、そのライフサイクルの終わりまで変わることはありません。そのため、`StockId` はエンティティのコンストラクタでのみ設定され、その後変更されることはありません。readonly 修飾子を用いて、コンストラクタ以外での変更を防ぎます。
+`StockId` は一意な識別子です。この `StockId` はエンティティの生成時に割り当てられ、そのライフサイクルの終わりまで変わることはありません。そのため、`StockId` はエンティティの生成時でのみ設定され、その後変更されることはありません。`readonly修飾子` を用いて、生成時以外で変更されることを防ぎます。
 
 ```js
 const stock: Stock = Stock.create(
@@ -184,11 +182,11 @@ stock.stockId = new StockId('stockId2'); // StockIdはreadonlyなので変更で
 
 ### 可変である
 
-メソッドを用いて、エンティティの状態を変更することができます。
+自身に定義されているメソッドを用いて、エンティティの状態を変更することができます。
 
 ```js
-const stock = Stock.create(
-  new StockId('stockId'),
+const stock: Stock = Stock.create(
+  new StockId(),
   new QuantityAvailable(0),
   new Status(StatusEnum.PreSale)
 );
@@ -205,16 +203,20 @@ console.log(stock.quantityAvailable); // QuantityAvailable { _value: 100 }
 `create`、`change`、`delete` メソッドを用いて、エンティティのライフサイクルを表現することができます。
 
 ```js
-const stock = Stock.create(省略);
-stock.changeStatus(省略);
-stock.delete(省略);
+const stock: Stock = Stock.create(
+  new StockId(),
+  new QuantityAvailable(0),
+  new Status(StatusEnum.PreSale)
+);
+stock.changeStatus(new Status(StatusEnum.OnSale));
+stock.delete();
 ```
 
 ## ビジネスルールの適用
 
-実装したエンティティはまだ未完成です。今のままではビジネスルールに反したエンティティのライフサイクルが発生してしまいます。例えば`在庫数が0`の状態でステータスが`在庫あり`のエンティティが生成できてしまいます。そこで、エンティティのライフサイクルにビジネスルールを適用する必要があります。それでは、ビジネスルールを適用していきましょう。
+実装したエンティティはまだ未完成です。今のままではビジネスルールに反したエンティティのライフサイクルが発生してしまいます。たとえば`在庫数が0`の状態でステータスが`在庫あり`のエンティティが生成できてしまいます。そこで、エンティティのライフサイクルにビジネスルールを適用する必要があります。それでは、ビジネスルールを適用していきましょう。
 
-```js:StockManagement/Domain/models/Book/Stock/Stock.ts
+```js:StockManagement/src/Domain/models/Book/Stock/Stock.ts
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
 import { Status, StatusEnum } from './Status/Status';
 import { StockId } from './StockId/StockId';
@@ -308,17 +310,17 @@ export class Stock {
 
 ```
 
-`create` メソッドでは、デフォルトの値を設定しています。このデフォルトの値は、例えば在庫数は 0、ステータスは在庫切れというように、ビジネスルールによって決まった値です。このように、ビジネスルールとの整合性を保つことができます。
+`create` メソッドでは、デフォルトの値を設定しています。このデフォルトの値は、たとえば「初期在庫数は`0`、初期ステータスは`在庫切れ`」というように、ビジネスルールによって決まった値です。このようにすることで生成時は必ずビジネスルールに従ったエンティティが生成されるようになります。
 
 ```js
  static create() {
     const defaultStockId = new StockId(); // 自動ID採番
-    const defaultQuantityAvailable = 0;
+    const defaultQuantityAvailable = new QuantityAvailable(0)
     const defaultStatus = new Status(StatusEnum.PreSale);
 
     return new Stock(
       defaultStockId,
-      new QuantityAvailable(defaultQuantityAvailable),
+      defaultQuantityAvailable,
       defaultStatus
     );
   }
@@ -334,7 +336,7 @@ export class Stock {
   }
 ```
 
-`changeQuantityAvailable`メソッドは、`increaseQuantity`、`decreaseQuantity`メソッドに変更されました。エンティティのメソッドはドメインの振る舞いを反映したものであるべきです。この変更でより直感的に在庫数を増減できるようになりました。そして「在庫数が 0 になったらステータスを在庫切れに変更する」というビジネスルールや、在庫数の整合性のルールを適用しています。
+`changeQuantityAvailable`メソッドは、`increaseQuantity`、`decreaseQuantity`メソッドに変更されました。エンティティのメソッドはドメインの振る舞いを反映したものであるべきです。この変更によって、より直感的に在庫数を増減させる操作ができるようになりました。さらに「在庫数が 0 になったらステータスを在庫切れに変更する」というビジネスルールや、在庫数の整合性のルールを適用しています。
 
 ```js
   // 在庫数を増やす
@@ -378,18 +380,16 @@ export class Stock {
 ```
 
 :::message
-エンティティが持つ属性は private にして、必ずメソッドを通して変更するようにしましょう。属性を変更するメソッドにビジネスルールを適用することで、ビジネスルールの整合性が崩れるのを防ぐことができます。
-
+エンティティが持つ属性は`private`にして、メソッドを通して変更するようにしましょう。属性を変更するメソッドにビジネスルールを適用することで、ビジネスルールの整合性が崩れるのを防ぐことができます。
 :::
 
 これらの実装により、エンティティにビジネスルールを適用することができました。
 
 # エンティティのテスト
 
-値オブジェクト同様、ビジネスルールが正しく実装されているかを保証するためにはテストは必須です。
-それではテストを書いていきましょう。「Stock.test.ts」を作成し、書いていきます。
+値オブジェクト同様、ビジネスルールが正しく実装されているかを保証するためにはテストは必須です。`Stock.ts`と同じディレクトリに`Stock.test.ts`を作成し、以下のように実装します。
 
-```js:StockManagement/Domain/models/Book/Stock/Stock.test.ts
+```js:StockManagement/src/Domain/models/Book/Stock/Stock.test.ts
 import { Stock } from './Stock';
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
 import { Status, StatusEnum } from './Status/Status';
@@ -509,24 +509,23 @@ describe('Stock', () => {
 
 ```
 
-ビジネスロジック、振る舞い(メソッド)、例外処理などを網羅するようにテストを書きます。
-なるべくテストのカバレッジが 100%に近づけるようにしましょう。
+ビジネスロジック、振る舞い (メソッド) 、例外処理などを網羅するようにテストを書きます。なるべくテストのカバレッジが 100%に近づけるようにしましょう。
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest`コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest Stock.test.ts
 ```
 
-お疲れ様でした、以上で`Stock`エンティティの実装は完了です。ビジネスルールをクラス内にカプセル化し、`Stock`エンティティ自身がドキュメントの役割を果たすようになりました。さらに、ライフサイクルにおける整合性が保てるようになりました。
+以上で`Stock`エンティティの実装は完了です。ビジネスルールをクラス内にカプセル化し、`Stock`エンティティ自身がドキュメントの役割を果たすようになりました。さらに、ビジネスルールを保ったままライフサイクルを変化させることができるようになりました。
 
 # まとめ
 
-- エンティティを利用することで、ドメインの振る舞いの整合性を担保できる
+- エンティティを利用することで、ライフサイクルの整合性を担保できる
 - エンティティ自身がドキュメントになる
 
-本章では、値オブジェクトとエンティティの違いとエンティティの実装方法について学びました。
-次章は、DDD において非常に重要で難しい概念である**集約**の説明を行い、**集約ルート**である**Book**ルートエンティティを実装していきます。
+本章では、値オブジェクトとエンティティの違い、エンティティの実装方法について学びました。
+次章は、ドメイン駆動設計の中でも非常に重要で難しい概念である**集約**の説明を行い、**集約ルート**である`Book`ルートエンティティを実装していきます。
 
 ### これまでのコード
 

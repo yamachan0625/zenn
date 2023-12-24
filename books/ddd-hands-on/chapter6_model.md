@@ -105,7 +105,7 @@ $ mkdir StockManagement/Domain/models/Book
    **Book (Root Entity) :** **集約のルート**として機能するエンティティです。
    **Stock:** 在庫を表すエンティティです。
    :::message
-   集約のルートの詳細は`chapter10集約`で説明します。
+   集約のルートの詳細は`chapter10 集約`で説明します。
    :::
 
 ```plantuml:StockManagement/Domain/models/Book/Book.pu
@@ -439,7 +439,6 @@ package "書籍集約(BookAggregation)" {
 }
 
 @enduml
-
 ```
 
 再度`BookAggregation.pu`ファイルで`option + D`を押下し、分割前のドメインモデル図と同じ図が表示されれば完了です。

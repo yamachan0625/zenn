@@ -16,11 +16,11 @@ chapters:
   - chapter4_domain_modeling
   - chapter5_event_storming
   - chapter6_model
-  - chapter7
-  - chapter8
-  - chapter9
-  - chapter10
-  - chapter11
+  - chapter7_tactical_design
+  - chapter8_value_object
+  - chapter9_entity
+  - chapter10_aggregate
+  - chapter11_domain_service
   - chapter12
   - chapter13
   - chapter14
