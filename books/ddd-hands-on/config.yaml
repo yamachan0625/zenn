@@ -21,7 +21,7 @@ chapters:
   - chapter9_entity
   - chapter10_aggregate
   - chapter11_domain_service
-  - chapter12
+  - chapter12_repository
   - chapter13
   - chapter14
   - chapter15

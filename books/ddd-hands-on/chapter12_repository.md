@@ -4,16 +4,16 @@ title: 'リポジトリ (Repository)'
 
 # リポジトリとは
 
-リポジトリは、**集約の永続化を抽象化**する役割を果たします。リポジトリの主な目的は、ドメインモデルやビジネスロジックをデータ永続化の詳細 (どのデータベースを利用するか、ORM を利用するかなど) から切り離すことです。これにより、ドメインモデルがデータベースのスキーマやデータアクセスなどの特定の技術に依存することなく、ドメイン知識の表現に集中できるようになります。
+リポジトリは、**集約の永続化を抽象化**する役割を果たします。リポジトリの主な目的は、ドメインモデルやビジネスロジックをデータ永続化の詳細 (どのデータベース、ORM を利用するか) から切り離すことです。これにより、ドメインモデルがデータベースのスキーマやデータアクセスなどの特定の技術に依存することなく、ドメイン知識の表現に集中できるようになります。
 
 リポジトリの責務は大きく二つに分かれます。一つは**集約の永続化**で、これにはエンティティの新規作成や既存のエンティティの更新が含まれます。もう一つは**集約の復元**で、これはデータベースからエンティティを取得し、ドメインオブジェクトとしてアプリケーションサービスに渡すプロセスを指します。リポジトリはこれらのプロセスを通して、ドメインモデルとデータベースの間の橋渡しを行います。
 
 # リポジトリの実装
 
-それでは、リポジトリの実装を見ていきましょう。ドメインサービスの章で作成した`ISBNDuplicationCheckDomainService`にリポジトリを適用していきます。リポジトリをより理解するために、最初にリポジトリを利用しせずに実装し、問題点を確認します。その後、リポジトリを利用した実装に修正していきメリットを確認していきます。
+それでは、リポジトリの実装を見ていきましょう。ドメインサービスの章で作成した`ISBNDuplicationCheckDomainService`にリポジトリを適用していきます。リポジトリをより理解するために、最初はリポジトリを利用せずに実装し、リポジトリを利用しない場合の問題点を確認します。その後、リポジトリを利用した実装に修正し、そのメリットを確認していきます。
 
 :::message
-ここで重要なのは、Prisma や PostgreSQL の具体的な実装の内容ではなく、**リポジトリの役割を理解すること**です。リポジトリはデータベースの永続化を抽象化することが目的です。そのためデータの永続化には、システムの要件に合わせて RDB でも NoSQL でも何を利用しても構いません。ここではあくまで一例として、Prisma や PostgreSQL といった技術を採用しています。読者のお気に入りのデータベース、ORM に置き換えて読み進めることも可能です。
+この本ではデータベースに`PostgreSQL`、ORM に`Prisma`を利用します。ここで重要なのは、`Prisma` や `PostgreSQL` の具体的な実装の内容ではなく、**リポジトリの役割を理解すること**です。リポジトリはデータベースの永続化を抽象化することが目的です。そのためデータの永続化には、システムの要件に合わせて `RDB`や`NoSQL` など、何を選択しても構いません。
 :::
 
 ## 環境のセットアップ
@@ -22,7 +22,7 @@ title: 'リポジトリ (Repository)'
 
 ### PostgreSQL のセットアップ
 
-PostgreSQL は Docker を利用してセットアップします。
+`PostgreSQL` は `Docker` を利用してセットアップします。
 まずはルートディレクトリに`docker-compose.yml`を作成し、以下の内容を記述します。
 
 ```yaml:StockManagement/docker-compose.yml
@@ -46,8 +46,7 @@ volumes:
 
 ### Prisma のセットアップ
 
-`Prisma` の詳しい説明はは省略します。詳しくは[公式ドキュメント](https://www.prisma.io/docs)を参照ください。
-
+次に[Prisma](https://www.prisma.io/docs)の設定を行います。
 まず、必要なパッケージをインストールします。
 
 ```bash:StockManagement/
@@ -55,7 +54,7 @@ $ npm install prisma --save-dev
 $ npm install @prisma/client
 ```
 
-次に、`Prisma CLI` の `init` コマンドを使用して `Prisma` をセットアップします。データベースには`postgresql`を指定します。このコマンドを実行すると`prisma/schema.prisma`と`.env`が作成されます。
+次に、`Prisma CLI` の `init` コマンドを使用して `Prisma` の初期化を行います。データベースには`postgresql`を指定します。このコマンドを実行すると`prisma/schema.prisma`と`.env`が作成されます。
 
 ```bash:StockManagement/
 $ npx prisma init --datasource-provider postgresql
@@ -103,7 +102,7 @@ enum Status {
 
 ### 動作確認
 
-まず `docker compose` コマンドを実行して、`PostgreSQL` を起動します。
+次に動作確認を行います。データベースが起動されていないとマイグレーションを行うことができないため、`docker compose` コマンドを実行して`PostgreSQL` を起動します。
 
 ```bash:StockManagement/
 $ docker compose up -d
@@ -119,7 +118,7 @@ $ npx prisma migrate dev --name init
 
 ## リポジトリを適用しないケース
 
-セットアップが完了したので、`ISBNDuplicationCheckDomainService`で、データベースからデータを取得できるように修正していきましょう。
+セットアップが完了したので、リポジトリを適用しないケースから確認していきましょう。`ISBNDuplicationCheckDomainService`で、ISBN の重複チェックをデータベースから取得したデータを利用する形に変更します。
 
 ```js:.../ISBNDuplicationCheckDomainService.ts
 import { BookId } from 'Domain/models/Book/BookId/BookId';
@@ -144,9 +143,10 @@ export class ISBNDuplicationCheckDomainService {
 }
 ```
 
-上記コードでは、直接ドメインサービス内で ORM を利用しデータベースへのアクセスを記述しています。これはオニオンアーキテクチャやドメイン駆動設計の考え方に反しています。DB へのアクセスはインフラストラクチャ層の責務であり、ドメイン層がインフラストラクチャ層に依存することは許容されていません。
+上記のコードでは、直接ドメインサービス内で ORM を利用しデータベースへのアクセスを記述しています。これはオニオンアーキテクチャの考え方に反しています。データベースへのアクセスはインフラストラクチャ層の責務です。ドメイン層がインフラストラクチャ層に依存することは許されていません。
 
-では、アーキテクチャに違反することでどのような問題が発生するのでしょうか？具体的には以下のような問題が発生します。
+では、オニオンアーキテクチャに違反することでどのような問題が発生するのでしょうか？
+具体的には以下のような問題が発生します。
 
 - テストの複雑化
 - 変更容易性の低下
@@ -187,27 +187,27 @@ describe('ISBNDuplicationCheckDomainService', () => {
 });
 ```
 
-このテストでは、`PrismaClient`をモックする必要があるため、テストのセットアップが複雑になります。モックの設定にはモックしたオブジェクトの詳細な知識が必要で、時間と労力を消費します。たとえばこのテストでは、利用する`PrismaClient`のすべてのメソッドをテストごとに正しくモックする必要があります。これではドメインの知識 (重複のチェック) をテストすることに集中できず、テストの信頼性が低下してしまいます。
+このテストでは、`PrismaClient`をモックする必要があるため、テストのセットアップが複雑になります。モックの設定には対象のオブジェクトの詳細な知識が必要で、時間と労力を消費します。たとえばこのテストでは、利用する`PrismaClient`が持つ`book`というプロパティに、`findUnique`というメソッドがあることを知っている必要があります。また、`PrismaClient`を利用する箇所が増えると、それぞれの箇所で同じようにモックを設定する必要があります。これでは、ドメインの知識 (今回で言えば重複のチェック) をテストすることに集中できず、テストの信頼性が低下してしまいます。
 
 また、テストが特定の ORM の振る舞いに依存しているため、ORM の変更やバージョンアップによりテストが影響を受ける可能性があります。もし ORM が変更された場合、`PrismaClient`をモックしている箇所をすべて見つけ出し、新い ORM をモックするように修正する必要があります。これは、テストの保守性を低下させます。
 
 ### 変更容易性の低下
 
-ドメイン層が特定の ORM やデータベース技術に依存すると、将来的な技術変更が困難になります。たとえば、ORM を Prisma から TypeORM に変更したい場合、ドメイン層のコードも大きく変更する必要が出てきます。ビジネスロジックを崩さずに変更するのは、根気がいる作業です。これは、システムの柔軟性を損ね、新しい技術への移行を困難にします。
+ドメイン層が特定の ORM やデータベース技術に依存すると、将来的な技術変更が困難になります。たとえば、ORM を `Prisma` から `TypeORM` に変更したい場合、ドメイン層のコードも大きく変更する必要が出てきます。その際、ビジネスロジックを崩さずに変更するのは、根気がいる作業です。これは、システムの柔軟性を損ね、新しい技術への移行を困難にします。
 
-また、ドメイン層がデータベースアクセスロジックを含むことで、ビジネスロジックとインフラストラクチャの関心が混在します。これにより、ビジネスロジックの見通しが悪くなり、保守性が低下します。ビジネスルールの変更とデータベースアクセスロジックの変更が相互に影響し合うため、変更の影響範囲が広がります。
+また、ドメイン層がデータベースアクセスロジックを含むことで、ビジネスロジックとインフラストラクチャの関心が混在します。これにより、ビジネスロジックの見通しが悪くなり、保守性が低下します。そして、ビジネスルールの変更とデータベースアクセスロジックの変更が相互に影響し合うため、変更の影響範囲が広がります。
 
-また、ドメイン層が特定のインフラストラクチャに依存している場合、リファクタリングや再利用が難しくなります。たとえば、新しいプロジェクトで同じドメインロジックを利用したいが、異なるデータベースを使っている場合、ドメインロジックを再利用するには大幅な変更が必要になります。
+また、ドメイン層が特定のインフラストラクチャに依存している場合、ビジネスロジックを再利用することが難しくなります。たとえば、新しいプロジェクトで同じビジネスロジックを利用したいが、異なるデータベースを使っている場合、ビジネスロジックを再利用するには大幅な変更が必要になります。
 
 ## リポジトリを適用するケース
 
-リポジトリを適用しない場合の問題点を確認したので、リポジトリを適用した実装に修正し、どのように問題点を解決できるか確認していきます。
+リポジトリを適用しない場合の問題点を確認したので、リポジトリを適用した実装に修正し、どのように、これらの問題点を解決するか確認していきます。
 
 ### リポジトリのインターフェイス
 
-ドメインサービスでインフラストラクチャの概念であるリポジトリを直接利用する (依存する) ことはできません。そこで **依存性逆転の原則 (DIP)** に従い、リポジトリの抽象、つまりインターフェイスを定義し、インターフェイスに具体的な実装を依存させるようにする必要があります。
+ドメインサービスはドメイン層のオブジェクトです。インフラストラクチャのオブジェクトであるリポジトリを直接利用する (依存する) ことは、オニオンアーキテクチャに反しています。そこで **依存性逆転の原則 (DIP)** に従い、リポジトリの抽象、つまりインターフェイスを定義し、インターフェイスに具体的な実装を依存させるように`DI`する必要があります。
 
-それではまずリポジトリのインターフェイスを作成しましょう。`/Domain/models/Book`ディレクトリ配下に、`IBookRepository.ts`というファイル作成し、ファイルを作成し、以下のように実装します。
+それでは、リポジトリのインターフェイスを作成しましょう。`/Domain/models/Book`ディレクトリ配下に、`IBookRepository.ts`というファイル作成し、以下のように実装します。
 
 ```js:StockManagement/Domain/models/Book/IBookRepository.ts
 import { Book } from './Book';
@@ -222,15 +222,15 @@ export interface IBookRepository {
 
 ```
 
-`ISBNDuplicationCheckDomainService`では`find`メソッドを利用します。`find`は`BookId`を受け取り、`Book`を返すメソッドです。`Book`が存在しない場合は`null`を返します。その他にも、`save`、`update`、`delete`といったメソッドを定義しています。これらのメソッドは、次章、アプリケーションサービスで、`Book`の永続化を行うために利用します。
+`ISBNDuplicationCheckDomainService`では`find`メソッドを利用します。`find`は`BookId`を受け取り、Book 集約を返すメソッドです。Book 集約が存在しない場合は`null`を返します。ここではその他にも、`save`、`update`、`delete`といったメソッドを定義しています。これらのメソッドは、`chapter13 アプリケーションサービス`で、Book 集約の永続化を行うために利用します。
 
 :::message
-リポジトリは実際に利用するタイミング、もしくは利用することが決まっているメソッドのみを定義するようにしましょう。いつか使うだろうと思って何でも定義しておくと、インターフェイスが肥大化した挙句、利用せずに放置されるといったことが起きてしまいます。
+リポジトリの設計では、実際に使用されるか、将来的に使用されることが予定されているメソッドのみを定義すると良いでしょう。不必要なメソッドを「いつか使うかもしれない」という理由で定義すると、インターフェイスが複雑化し、保守性や理解のしやすさが低下する恐れがあります。必要最低限の定義に留めることで、コードベースをクリーンかつ管理しやすく保ち、必要に応じて適切にメソッドを追加することができます。
 :::
 
 ### リポジトリのインターフェイスを利用してみる
 
-それでは作成した`IBookRepository`を利用して、`ISBNDuplicationCheckDomainService`にリポジトリを適用していきましょう。
+それでは、`ISBNDuplicationCheckDomainService`が `IBookRepository` インターフェイスのリポジトリをコンストラクタインジェクションを通じて受け取るように変更します。そして`DI`されたリポジトリを利用するように置き換えてみましょう。
 
 ```js:.../ISBNDuplicationCheckDomainService.ts
 import { BookId } from 'Domain/models/Book/BookId/BookId';
@@ -250,13 +250,13 @@ export class ISBNDuplicationCheckDomainService {
 }
 ```
 
-リポジトリを利用することで、ドメインサービスはデータベースアクセスの詳細を知る必要がなくなり、**ドメインの知識に集中**できるようになりました。また、抽象型である、`IBookRepository`に依存するようにすることで、具体的なデータベースアクセスの実装がなくても、ドメインサービスを実装することができました。つまり、ドメイン層がその他レイヤーに依存することなく、独立して実装できるということです。
+リポジトリを利用することで、ドメインサービスはデータベースアクセスの詳細を知る必要がなくなり、**ドメイン知識の表現**に集中できるようになりました。また、抽象型である`IBookRepository`にリポジトリの実装を依存させるようにすることで、具体的なデータベースアクセスを行うオブジェクトが未実装でもドメインサービスを実装することができています。つまり、ドメイン層がその他レイヤーに依存することなく、独立して実装できたということです。
 
 ### ドメインサービスのテスト
 
-それではリポジトリを利用したケースのテストを書いていきましょう。`ISBNDuplicationCheckDomainService`ではリポジトリを抽象型に依存させました。そのため、テスト用の軽量なリポジトリを用いてテストすることができます。
+次に、リポジトリを利用したケースのテストを書いていきましょう。`ISBNDuplicationCheckDomainService`はリポジトリを`IBookRepository`に依存しています。そのため、テストではテスト用の軽量なリポジトリを`DI`してテストすることが可能です。
 
-まずは、インメモリを利用した軽量なリポジトリを実装しましょう。`src`ディレクトリ配下に、` Infrastructure/InMemory/Book`ディレクトリを作成し、`InMemoryBookRepository.ts `というファイルを作成し、以下のように実装します。
+ここでは、テストのためにインメモリを利用した軽量なリポジトリを実装し、テストを行います。`src`ディレクトリ配下に、` Infrastructure/InMemory/Book`ディレクトリを作成し、`InMemoryBookRepository.ts `というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Infrastructure/InMemory/Book/InMemoryBookRepository.ts
 import { Book } from 'Domain/models/Book/Book';
@@ -291,8 +291,9 @@ export class InMemoryBookRepository implements IBookRepository {
 
 ```
 
-このリポジトリはインメモリ上に集約をそのまま保存し、取得することができるだけの簡単な実装です。
-それでは、作成した`InMemoryBookRepository`を利用して、テストを書いていきましょう。`ISBNDuplicationCheckDomainService.ts`と同じ階層に`ISBNDuplicationCheckDomainService.test.ts`というファイルを作成し、以下のように実装します。
+このリポジトリはインメモリ上に集約の保存、取得を行うことができます。非常にシンプルで軽量なリポジトリです。
+
+それでは、作成した`InMemoryBookRepository`を利用したテストを書いていきましょう。`ISBNDuplicationCheckDomainService.ts`と同じ階層に`ISBNDuplicationCheckDomainService.test.ts`というファイルを作成し、以下のように実装します。
 
 ```js:.../ISBNDuplicationCheckDomainService.test.ts
 import { ISBNDuplicationCheckDomainService } from './ISBNDuplicationCheckDomainService';
@@ -351,9 +352,9 @@ describe('ISBNDuplicationCheckDomainService', () => {
 
 ```
 
-`InMemoryBookRepository`を利用してテストを書くことで、テストのためにデータベースの実行環境を用意する必要がなく、テストのセットアップが簡単になりました。また、テストの実行速度も向上します。
+`InMemoryBookRepository`を利用してテストを書くことで、テストのためにデータベースの実行環境を用意する必要がなくなります。また、テストのセットアップが簡単になり、実行速度も`データベース`を利用する場合よりも向上します。
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest` コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest ISBNDuplicationCheckDomainService.test.ts
@@ -363,7 +364,7 @@ $ jest ISBNDuplicationCheckDomainService.test.ts
 
 # Prisma を利用したリポジトリの実装
 
-それでは具体的な詳細である、`Prisma`を利用したリポジトリを実装していきましょう。さきほど作成した`Infrastructure`ディレクトリ配下に、`Prisma/Book`ディレクトリを作成し、`PrismaBookRepository.ts`というファイルを作成し、以下のように実装します。
+それでは実際の環境で利用する、`Prisma`を利用したリポジトリを実装していきましょう。さきほど作成した`Infrastructure`ディレクトリ配下に、`Prisma/Book`ディレクトリを作成し、`PrismaBookRepository.ts`というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
 import { $Enums, PrismaClient } from '@prisma/client';
@@ -475,28 +476,30 @@ export class PrismaBookRepository implements IBookRepository {
 }
 ```
 
-Prisma を利用し、`IBookRepository`のインターフェイスを元に、`save`、`update`、`delete`、`find`を実装しています。また、`statusDataMapper`や`statusEnumMapper`といった、ドメイン層の型とデータベースの型を変換するためのメソッドを実装しています。
+`IBookRepository`のインターフェイスを元に、`save`、`update`、`delete`、`find`メソッドを`Prisma`を利用して実装しています。さらに、`statusDataMapper`や`statusEnumMapper`といった、ドメイン層の型とデータベースの型を変換するためのメソッドを実装しています。
 
-ここで重要なのはリポジトリの実装の詳細ではなく、インターフェイス`IBookRepository`の要件を満たす実装ができたということです。これにより、DB アクセスや ORM の詳細をドメイン層から隠蔽し、インフラストラクチャ層に閉じ込めることができました。
+ここで重要なのは`Prisma`の具体的な実装方法ではなく、インターフェイス`IBookRepository`の要件を満たす実装ができたということです。これにより、データベースアクセスや`ORM`の詳細をドメイン層から隠蔽し、インフラストラクチャ層に閉じ込めることができます。
 
 # リポジトリのテスト
 
-リポジトリのテストには 2 種類あります。
+リポジトリのテストには以下の 2 種類あります。
 
 - リポジトリを利用する側のコードが集約の入出力を正しく行えるか
 - リポジトリ自体が正しく動くか
 
 それぞれ確認してみましょう。
 
-### リポジトリを利用する側のコードが集約の入出力を正しく行えるか
+## リポジトリを利用する側のコードが集約の入出力を正しく行えるか
 
-一つが`ISBNDuplicationCheckDomainService`のような、リポジトリを利用する側のコードが集約の入出力を正しく行えるか確認するテストです。これは、`ISBNDuplicationCheckDomainService.test.ts`のようにテスト用のリポジトリを利用してテストを行うことで確認できましたね。
+一つが`ISBNDuplicationCheckDomainService`のような、リポジトリを利用する側のコードが集約の入出力を正しく行えるか確認するテストです。これは、`ISBNDuplicationCheckDomainService.test.ts`のようにテスト用のリポジトリ (インメモリを利用したリポジトリ) を利用してテストを行うことで確認することができました。
 
-### リポジトリ自体が正しく動くか
+## リポジトリ自体が正しく動くか
 
 もう一つが、リポジトリ自体が正しく動くか確認するテストです。このテストでは実際にデータベースにアクセスし、データの永続化や復元が正しく行えるか確認します。
 
-リポジトリを利用したテストを行う際に、多くの箇所でテストデータを作成する必要が出てきます。テスト用にテストデータ作成用のオブジェクトを作成しておくと便利です。`Infrastructure`ディレクトリ配下に、`shared/Book`ディレクトリを作成します。次に`bookTestDataCreator.ts`というファイルを作成し、以下のように実装します。
+リポジトリを利用したテストでは、多くの箇所でテストデータを作成する必要が出てきます。テストデータ作成用のユーティリティー関数を作成しておくと便利です。
+
+リポジトリ自体のテストを行う前に実装しておきましょう。`Infrastructure`ディレクトリ配下に、`shared/Book`ディレクトリを作成します。次に`bookTestDataCreator.ts`というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Infrastructure/shared/Book/bookTestDataCreator.ts
 import { Book } from 'Domain/models/Book/Book';
@@ -536,7 +539,10 @@ export const bookTestDataCreator =
   };
 ```
 
-`bookTestDataCreator`は汎用的に利用できます。対象のテストで利用したいリポジトリに切り替えることができますし、テストデータをデフォルト値として定義しているため、テストデータの作成が簡単になります。複数テストデータを作成したい場合は、デフォルト値を上書きすることで対応できます。
+`bookTestDataCreator`はテストで汎用的に利用することができるテストデータ作成用のユーティリティ関数です。この関数は、まず`IBookRepository`インターフェイスを受け取ります。これにより、テスト対象のリポジトリを柔軟に切り替えることができるようになります。次に、オプションのパラメータオブジェクトを受け取り、これに基づいて Book エンティティのテストデータを生成します。
+
+デフォルト値が設定されているため、特定の値を指定する必要がない場合はそのまま使用できます。必要に応じてこれらのデフォルト値を上書きすることで、異なる状況をシミュレートするテストデータを容易に生成できます。
+
 それでは、リポジトリ自体が正しく動くか確認するテストを書いていきましょう。`PrismaBookRepository.ts`と同じ階層に`PrismaBookRepository.test.ts`というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.test.ts
@@ -628,14 +634,15 @@ describe('PrismaBookRepository', () => {
 
 ```
 
-リポジトリに生えているメソッド (save, update, delete, find) が正しく動くか確認しています。テストデータの作成には、先ほど作成した`bookTestDataCreator`を利用しています。
+PrismaBookRepository.test.ts において、PrismaBookRepository クラスの各メソッド (save, update, delete, find) が正確に機能するかを確認するテストが実装されています。これらのテストでは、bookTestDataCreator 関数を使用して、テストデータを柔軟かつ効率的に生成しています。
+
+リポジトリの各メソッド (save, update, delete, find) が正確に機能するかを確認するテストが実装されています。これらのテストでは、先ほど作成した`bookTestDataCreator`関数を使用して、テストデータを効率的に生成しています。
 
 :::message
-リポジトリを利用したテストでは、開発環境のデータベースにアクセスします。そのため、テストを実行する前に、`docker-compose.yml`で定義した`localdb`を起動しておく必要があります。
-また、`localdb`でリポジトリのテスト時に、データベースのデータが初期化されてしまいます。本来であればテスト用にデータベースを用意すると良いでしょう。
+リポジトリを使ったテストでは、開発環境のデータベースにアクセスするため、テスト実行前にデータベースを起動する必要があります。また、テスト中にデータベースのデータが初期化されるため、本番環境とは別にテスト専用のデータベースを設定することが望ましいです。
 :::
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest` コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest PrismaBookRepository.test.ts
@@ -645,23 +652,28 @@ $ jest PrismaBookRepository.test.ts
 
 # トランザクション管理
 
-データベースを扱うリポジトリで忘れてはいけないのが、**トランザクション管理**です。トランザクション管理を適切に行わなければ、データの整合性が保つことができません。一般的に、ドメインモデルの永続化に関する**トランザクションを管理するのはアプリケーション層の責務**です。 (アプリケーションサービスの詳細は chapter13 アプリケーションサービスの章で説明します)
-アプリケーション層は、ドメイン層の永続化を行う際に、トランザクションを開始し、コミットまたはロールバックする責務を持ちます。
+データベースを扱うリポジトリで忘れてはいけないのが、**トランザクション管理**です。トランザクション管理を適切に行わなければ、データの整合性を保つことができません。一般的に、ドメインモデルの永続化に関する**トランザクションを管理するのはアプリケーション層の責務**です。
 
-トランザクションの管理は利用しているアプリケーションフレームワークや ORM によって異なりますが、実装のベースは以下のような形になります。
+アプリケーションサービス (`chapter13 アプリケーションサービス`) は、ドメイン層の永続化を行う際に、トランザクションを開始し、コミットまたはロールバックする責務を持ちます。
 
-```js:sample
+トランザクションの管理は、利用しているアプリケーションフレームワークや ORM によって異なりますが、実装のベースは以下のサンプルような形になります。
+
+```js:sample.ts
 class ApplicationService {
   constructor(
-    private repository: IDomainRepository,
+    private repository: IRepository,
   ) {}
+
   execute() {
     try {
+      // トランザクションを開始する
       transaction.start();
       // ここでドメインモデルを操作し、データベースへアクセスする
       this.repository.save();
+      // トランザクションをコミットする
       transaction.commit();
     } catch (error) {
+      // トランザクションをロールバックする
       transaction.rollback();
     }
   }
@@ -672,10 +684,11 @@ class ApplicationService {
 
 ## Prisma のトランザクション管理
 
-Prisma では、`PrismaClient`の`$transaction`メソッドを利用することでトランザクションの管理を行うことができます。
-それでは`ApplicationService`に適用してみましょう。
+`Prisma` では、`PrismaClient`が提供する`$transaction`メソッドを利用することでトランザクションの管理を行うことができます。
 
-```js:sample
+それではサンプルのアプリケーションサービスに適用してみましょう。
+
+```js:sample.ts
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -683,6 +696,7 @@ class ApplicationService {
   constructor(
     private repository: IDomainRepository,
   ) {}
+
   execute() {
    await prisma.$transaction(async (transaction) => {
       // ここでドメインモデルを操作し、データベースへアクセスする
@@ -692,13 +706,15 @@ class ApplicationService {
 }
 ```
 
-これで`Prisma`を利用したトランザクション管理ができるようになりました。しかし、この実装には問題があります。それは、アプリケーション層の`ApplicationService`がインフラストラクチャ層の`Prisma`に依存していることです。オニオンアーキテクチャでは、アプリケーション層はドメイン層に依存することができますが、インフラストラクチャ層に依存することはできません。このような依存がもたらす問題はさきほど確認しましたね。依存することで、アプリケーション層のテストが複雑になり、アプリケーション層の変更が困難になります。
+これで`Prisma`を利用したトランザクション管理をアプリケーションサービスで行えるようになりました。ですが、この実装には問題があります。それは、アプリケーション層のアプリケーションサービスがインフラストラクチャ層の`Prisma`に依存していることです。オニオンアーキテクチャでは、アプリケーション層はドメイン層に依存することはできますが、インフラストラクチャ層に依存することはできません。このような依存がもたらす問題はさきほど確認しました。このような依存関係は、アプリケーション層のテストを複雑にし、アプリケーション層の変更を困難にする問題を引き起こします。
 
 それでは、アプリケーション層がインフラストラクチャ層に依存しないように、トランザクション管理の実装を行います。
 
 ### インターフェイスの定義
 
-まずは、抽象に依存させるように変更するためトランザクション管理用オブジェクトのインターフェイスを定義します。`src`ディレクトリに`Application/shared`ディレクトリを作成します。次に`ITransactionManager.ts`というファイルを作成し、以下のように実装します。
+`DIP`の適用の手順は同様です。まずは、抽象に依存させるように変更するためトランザクション管理用オブジェクトのインターフェイスを定義します。
+
+`src`ディレクトリに`Application/shared`ディレクトリを作成します。次に`ITransactionManager.ts`というファイルを作成し、以下のように実装します。
 
 ```js:StockManagement/src/Application/shared/ITransactionManager.ts
 export interface ITransactionManager {
@@ -706,9 +722,9 @@ export interface ITransactionManager {
 }
 ```
 
-このインターフェイスは以下のようにアプリケーションサービスで DI して利用することになります。
+このインターフェイスは以下のようにアプリケーションサービスで利用することになります。
 
-```js:sample
+```js:sample.ts
 import { ITransactionManager } from 'Application/shared/ITransactionManager';
 
 class ApplicationService {
@@ -716,6 +732,7 @@ class ApplicationService {
     private repository: IDomainRepository,
     private transactionManager: ITransactionManager
   ) {}
+
   execute() {
     await this.transactionManager.begin(async () => {
       // ここでドメインモデルを操作し、データベースへアクセスする
@@ -725,16 +742,16 @@ class ApplicationService {
 }
 ```
 
-これで、アプリケーションサービスから`Prisma`への依存を取り除くことができました。後はこのインターフェイスに合わせて、利用している`ORM`やデータベースを利用して実装を行うだけです。
+これで、アプリケーションサービスから`Prisma`への依存を取り除くことができました。後はこのインターフェイスに合わせて、利用している ORM やデータベースを利用して実装を行うだけです。
 
 ### Prisma のトランザクション管理の実装
 
-それでは、`ITransactionManager`に合わせて`Prisma`を利用したトランザクション管理の実装を行います。
+それでは、インターフェイス`ITransactionManager`に合わせて`Prisma`を利用したトランザクション管理の実装を行います。
 
-ここからはドメイン駆動設計の本筋と外れた、技術的な実装の話になるため、詳細な説明は省略しコードと簡単な説明のみを記載します。ここで大事なのは、アプリケーション層からトランザクションの具体的な実装を隠蔽することです。`Prisma`の詳細に興味がない方はコピペして次に進みましょう。
+ここからはドメイン駆動設計の本筋からは外れた技術的な実装の話になるため、詳細な説明は省略し、実装コードと簡単な説明のみ記載します。繰り返しですが、大事なのはアプリケーション層からトランザクションの具体的な実装を隠蔽することです。`Prisma`の詳細に興味がない方はコピペして次に進みましょう。
 
 :::details PrismaClient
-PrismaClient はさまざまなところで利用するため、共通のインスタンスを利用するようにします。
+`PrismaClient` はアプリケーション全体で再利用することが推奨されているため、共通のインスタンスを利用するようにします。詳しくは[こちら](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections#prismaclient-in-long-running-applications)
 
 ```js:StockManagement/src/Infrastructure/Prisma/prismaClient.ts
 import { PrismaClient } from '@prisma/client';
@@ -746,7 +763,7 @@ export default prisma;
 :::
 
 :::details IDataAccessClientManager
-ORM のデータアクセス用インスタンスを抽象化します。
+データアクセスクライアントの抽象化インターフェイスを提供します。
 
 ```js:StockManagement/src/Infrastructure/shared/IDataAccessClientManager.ts
 export interface IDataAccessClientManager<T> {
@@ -783,7 +800,7 @@ export class PrismaClientManager implements IDataAccessClientManager<Client> {
 :::
 
 :::details PrismaTransactionManager
-`ITransactionManager`の`Prisma`を利用した実装です。
+インターフェイス`ITransactionManager`の`Prisma`を利用した実装です。
 
 ```js:StockManagement/src/Infrastructure/Prisma/PrismaTransactionManager.ts
 import { ITransactionManager } from '../../Application/shared/ITransactionManager'
@@ -810,8 +827,8 @@ export class PrismaTransactionManager implements ITransactionManager {
 :::
 
 :::details PrismaBookRepository
-`ClientManager` を DI します。
-リポジトリで利用する`Prisma Client`を`PrismaClientManager`から取得するように変更します。
+`ClientManager` を `DI`します。
+リポジトリで利用する`PrismaClient`を`PrismaClientManager`から取得するように変更します。
 
 ```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
 export class PrismaBookRepository implements IBookRepository {
@@ -846,16 +863,17 @@ describe('PrismaBookRepository', () => {
 :::
 
 これらの実装によって、`Prisma`を利用したトランザクション管理の詳細を`PrismaTransactionManager`に隠蔽することができました。
+
 簡単に処理の流れを説明します。
 
 1. アプリケーションサービスで`PrismaTransactionManager`の`begin`メソッドが呼ばれる
-2. `begin`メソッドの最初に`PrismaClientManager`の`setClient`メソッドが呼ばれ、`PrismaClientManager`にトランザクション用のクライアントがセットされる
+2. `begin`メソッドの最初に`PrismaClientManager`の`setClient`メソッドが呼ばれ、`PrismaClientManager`にトランザクション用の`Prisma`クライアントがセットされる
 3. トランザクションが開始される
-4. リポジトリで`PrismaClientManager`の`getClient`で 2 でセットしたトランザクション用のクライアントが取得される
-5. リポジトリでトランザクション用のクライアントを利用して、データベースへのアクセスが行われる
+4. リポジトリでは`PrismaClientManager`の`getClient`を使って、ステップ 2 でセットされたトランザクション用の`Prisma`クライアントを取得します
+5. 取得した`Prisma`クライアントを使用して、データベースへの操作が行われます
 6. エラーがなければ、トランザクションがコミットされる
 
-このアプローチにより、アプリケーション層は Prisma に依存せずにトランザクションを管理できます。また、トランザクションの管理が一箇所に集約されるため、エラーハンドリングやトランザクションのライフサイクル管理が容易になります。
+このアプローチにより、アプリケーション層は`Prisma`に依存することなくトランザクションを管理できます。また、トランザクションの管理が一箇所に集約されるため、エラーハンドリングやトランザクションのライフサイクル管理が容易になります。
 
 # まとめ
 
@@ -864,7 +882,8 @@ describe('PrismaBookRepository', () => {
 - 抽象型である、`IBookRepository`に依存するようにすることで、具体的なデータベースアクセスの実装がなくても、ドメインサービスを実装することができる
 
 本章では、リポジトリついて学び、`ISBNDuplicationCheckDomainService`を完成させテストまで行いました。また、トランザクション管理について学び、`Prisma`を利用したトランザクション管理の実装を行いました。
-次章では、ユースケースの表現やドメインサービスのクライアントであるアプリケーションサービスについて学びます。
+
+次章は、ユースケースの表現やドメインサービスのクライアントでもあるアプリケーションサービスについて学びます。
 
 ### これまでのコード
 
