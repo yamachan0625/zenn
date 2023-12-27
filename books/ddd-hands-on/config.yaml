@@ -22,8 +22,8 @@ chapters:
   - chapter10_aggregate
   - chapter11_domain_service
   - chapter12_repository
-  - chapter13
-  - chapter14
+  - chapter13_application_service
+  - chapter14_presentation
   - chapter15
   - chapter16
   - chapter17

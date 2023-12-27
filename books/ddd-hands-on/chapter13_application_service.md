@@ -4,9 +4,9 @@ title: 'アプリケーションサービス (Application Service)'
 
 # アプリケーションサービスとは
 
-アプリケーションサービスは、ドメインサービスに次ぐ 2 つ目のサービスで、**ユースケースを実現**するための操作を提供するサービスです。アプリケーションサービスは、**ドメイン層の「エンティティ」「値オブジェクト」「ドメインサービス」などのドメインオブジェクトを利用してユースケースを実現**します。また、リポジトリの章で説明した通りアプリケーションサービスでトランザクションを管理を行います。
+アプリケーションサービスとは、ドメインサービスに次ぐ 2 つ目のサービスで、**ユースケースを実現**するための操作を提供するサービスです。アプリケーションサービスは、**ドメイン層の「エンティティ」「値オブジェクト」「ドメインサービス」などのドメインオブジェクトを利用してユースケースを実現**します。
 
-ユースケースとは、ユーザーがシステムを利用する際に実現したい機能や処理のことです。たとえば、在庫管理コンテキストでは、
+「ユースケース」とは、ユーザーがシステムを利用する際に実現したい機能や処理のことです。たとえば、在庫管理コンテキストでは、
 
 - 書籍を登録する
 - 書籍を取得する
@@ -15,7 +15,7 @@ title: 'アプリケーションサービス (Application Service)'
 
 などの、いわゆる**CRUD** 操作がユースケースにあたります。
 
-それぞれのユースケースを表現するアプリケーションサービスを実装していきましょう。
+では、それぞれのユースケースを表現するアプリケーションサービスを実装していきましょう。
 
 # 書籍登録アプリケーションサービスの実装
 
@@ -65,6 +65,7 @@ export class RegisterBookApplicationService {
 ```
 
 `RegisterBookApplicationService`では、まず`ISBNDuplicationCheckDomainService`を利用して、ISBN の重複チェックを行います。重複している場合は、`Error`をスローします。重複していない場合は、`Book`エンティティを生成し、`BookRepository`を利用して永続化します。
+
 ここで重要なのは、ISBN の重複チェックのビジネスロジックや、`Book`エンティティ生成時のビジネスロジックがドメインオブジェクトに隠蔽されているということです。これにより、アプリケーションサービスの実装はドメイン知識を持たない状態で、ドメインオブジェクトを利用するだけでユースケースを実現することができます。
 
 ## 書籍登録アプリケーションサービスのテスト
@@ -81,7 +82,7 @@ export class MockTransactionManager {
 
 `MockTransactionManager`は、`begin`メソッドを実装していますが、引数に渡されたコールバック関数をそのまま実行しています。これにより、トランザクションを考慮したテストを行いたくないケースでは、`MockTransactionManager`を利用することでテストを行うことができます。
 
-それでは、作成した`MockTransactionManager`を利用し`RegisterBookApplicationService`のテストを実装していきましょう。`RegisterBookApplicationService`と同じ階層に`RegisterBookApplicationService.test.ts`ファイルを作成し、以下のように実装します。
+それでは、テストを実装していきましょう。`RegisterBookApplicationService.ts`と同じディレクトリ内に`RegisterBookApplicationService.test.ts`ファイルを作成し、以下のように実装します。
 
 ```js:.../Application/Book/RegisterBookApplicationService/RegisterBookApplicationService.test.ts
 import { InMemoryBookRepository } from 'Infrastructure/InMemory/Book/InMemoryBookRepository';
@@ -140,9 +141,9 @@ describe('RegisterBookApplicationService', () => {
 });
 ```
 
-このテストでは、テスト用のリポジトリとトランザクション管理オブジェクトを利用し、`RegisterBookApplicationService`をインスタンス化しています。そして、`RegisterBookApplicationService`を利用して書籍が正常に作成できることを確認しています。また、重複書籍が存在する場合はエラーを投げることを確認しています。
+このテストでは、テスト用のリポジトリとトランザクション管理オブジェクト`MockTransactionManager`を利用し、`RegisterBookApplicationService`をインスタンス化し、実行して書籍が正常に作成できることを確認しています。また、重複書籍が存在する場合はエラーが投げられることを確認しています。
 
-アプリケーションサービスのテストでは、値に関する検証を行っていません。その理由は、値に対する検証はドメインオブジェクトのテストで既に行っているからです。このアプローチにより、アプリケーションサービスのテストはユースケースに集中することができます。その結果、テストはよりシンプルで理解しやすくなります。
+アプリケーションサービスのテストでは、値に関する検証を行っていません。その理由は、値に対する検証はドメインオブジェクトのテストですでに行っているからです。このアプローチにより、アプリケーションサービスのテストはユースケースに集中することができます。その結果テストは、よりシンプルで理解しやすくなります。
 
 :::message
 テストで利用するパラメータに `TypeScript` の `Utility Types` である `Required` を利用している点に注目してください。これは、`RegisterBookCommand`のプロパティをすべて必須にするために利用しています。
@@ -155,7 +156,7 @@ const command: Required<RegisterBookCommand> = {
 };
 ```
 
-コマンド系アプリケーションサービスが実行時に受け取るパラメータは、ドメインの進化により、任意のプロパティが追加される可能性があります。任意のプロパティの追加はテストファイルでコンパイルエラーが出ず、**悪い意味でテストに影響を与えることはありません**。
+コマンド系アプリケーションサービスが実行時に受け取るパラメーターは、ビジネスルールの変更により任意のプロパティが追加される可能性があります。任意のプロパティの追加はテストファイルでコンパイルエラーが出ず、**悪い意味でテストに影響を与えることはありません**。
 
 ```js
 // application service
@@ -175,20 +176,11 @@ const command: RegisterBookCommand = {
 };
 ```
 
-そこで、`RegisterBookCommand`のプロパティをすべて必須にするために `Required` を利用しています。これにより、以下のようなメリットを得られます。
-
-- **仕様変更時の安全性**
-  新しいプロパティが追加されると、既存のテストケースがコンパイルエラーを出し、開発者は新しいプロパティをテストケースに含める必要があることに気づきます。これにより、新しいプロパティが適切にテストされることを保証します。
-
-- **ドメインの変更への対応**
-  ドメインモデルやビジネスロジックが変更されたときに、テストがそれを反映するように更新されることを保証します。これにより、テストが常に現在の実装を正確に表現していることが確実になります。
-
-- **品質保証の強化**
-  新しいプロパティが追加されたときにテストが自動的に失敗することで、開発者はその変更をテストケースに組み込むことを強制され、その結果としてソフトウェアの品質が向上します。
+そこで、`RegisterBookCommand`のプロパティをすべて必須にするために `Required` を利用しています。これにより、新しいプロパティの追加やドメインモデルの変更が行われた際、既存のテストケースがコンパイルエラーを引き起こすことで、開発者はこれらの変更をテストケースに組み込む必要性に気づきます。これにより、新しいプロパティや変更されたビジネスロジックが適切にテストされることが保証され、テストが常に最新の実装を正確に反映するようになります。結果として、ソフトウェアの品質が継続的に向上します。
 
 :::
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest` コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest RegisterBookApplicationService.test.ts
@@ -217,7 +209,8 @@ export class GetBookApplicationService {
 ```
 
 `GetBookApplicationService`では、`BookRepository`を利用して`Book`エンティティを取得し、`Book`エンティティをそのまま返却しています。
-この実装には問題があります。ドメインオブジェクトのクライアントはアプリケーションサービスです。しかし、この実装ではアプリケーションサービスのクライアントであるプレゼンテーション層にドメインオブジェクトが漏れてしまい、プレゼンテーション層でドメインオブジェクトを操作できてしまいます。ドメインオブジェクトに依存するレイヤーが増えると、ドメインオブジェクトの変更により、影響範囲が広がり、変更容易性が低下します。
+
+この実装には問題があります。ドメインオブジェクトのクライアントはアプリケーションサービスです。現在の実装では`book`集約ををのまま`return`しています。これでは、アプリケーションサービスのクライアントであるプレゼンテーション層にドメインオブジェクトが漏れてしまい、プレゼンテーション層でドメインオブジェクトを操作できてしまいます。ドメインオブジェクトに依存するレイヤーが増えると、ドメインオブジェクトの変更により、影響範囲が広がり、変更容易性が低下します。
 
 この問題に DTO (Data Transfer Object) を利用することで対応します。
 
@@ -262,11 +255,11 @@ export class BookDTO {
   }
 ```
 
-これで、`GetBookApplicationService`は`BookDTO`を返却するようになり、ドメインオブジェクトがアプリケーション層から漏れることはありません。
+これで、`GetBookApplicationService`は`BookDTO`を返却するようになり、ドメインオブジェクトがアプリケーション層から漏れ出すことを防ぐことができます。
 
 ## 書籍取得アプリケーションサービスのテスト
 
-それでは、`GetBookApplicationService`のテストを実装していきましょう。`GetBookApplicationService`と同じ階層に`GetBookApplicationService.test.ts`ファイルを作成し、以下のように実装します。
+それでは、テストを実装していきましょう。`GetBookApplicationService`と同じディレクトリ内に`GetBookApplicationService.test.ts`ファイルを作成し、以下のように実装します。
 
 ```js:.../Application/Book/GetBookApplicationService/GetBookApplicationService.test.ts
 import { InMemoryBookRepository } from 'Infrastructure/InMemory/Book/InMemoryBookRepository';
@@ -302,13 +295,14 @@ describe('GetBookApplicationService', () => {
 
 このテストでは、`GetBookApplicationService`を利用して、指定された ID の書籍が存在する場合は`BookDTO`に詰め替えられ、取得できることを確認しています。また、指定された ID の書籍が存在しない場合は`null`が取得できることを確認しています。
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest` コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest GetBookApplicationService.test.ts
 ```
 
 エラーなく成功すれば OK です。
+在庫を増やすために必要なドメ
 
 # 在庫追加アプリケーションサービスの実装
 
@@ -348,11 +342,11 @@ export class IncreaseBookStockApplicationService {
 
 `IncreaseBookStockApplicationService`では、`BookRepository`を利用して`Book`エンティティを一度取得します。その後、`Book`エンティティの`increaseStock`メソッドを利用して在庫を増やします。最後に、`BookRepository`を利用して永続化します。
 
-更新系のアプリケーションサービスで特徴的なのが、一度リポジトリから`Book`エンティティを取得し、その後に`increaseStock`メソッドを利用して在庫を増やしてる点です。これは、`Book`エンティティの`increaseStock`メソッドが、在庫を増やすために必要なドメイン知識を持っているためです。このような実装にすることで、在庫の増減に関するドメイン知識がドメイン層に集約され、アプリケーションサービスの実装はドメイン知識を持たない状態で、ドメインオブジェクトを利用するだけでユースケースを**安全に**実現することができます。
+更新系のアプリケーションサービスで特徴的なのが、一度リポジトリから`Book`エンティティを取得し、その後に`increaseStock`メソッドを利用して在庫を増やしてる点です。これは、`Book`エンティティの`increaseStock`メソッドが、在庫を増やすために必要なビジネスロジックを持っているためです。このような実装にすることで、在庫の増減に関するドメイン知識がドメイン層に集約され、アプリケーションサービスの実装はドメイン知識を持たない状態で、ドメインオブジェクトを利用するだけでユースケースを**安全に**実現することができます。
 
 ## 在庫追加アプリケーションサービスのテスト
 
-それでは、`IncreaseBookStockApplicationService`のテストを実装していきましょう。`IncreaseBookStockApplicationService`と同じ階層に`IncreaseBookStockApplicationService.test.ts`ファイルを作成し、以下のように実装します。
+それでは、テストを実装していきましょう。`IncreaseBookStockApplicationService`と同じディレクトリ内に`IncreaseBookStockApplicationService.test.ts`ファイルを作成し、以下のように実装します。
 
 ```js:.../Application/Book/IncreaseBookStockApplicationService/IncreaseBookStockApplicationService.test.ts
 import { InMemoryBookRepository } from 'Infrastructure/InMemory/Book/InMemoryBookRepository';
@@ -416,7 +410,7 @@ describe('IncreaseBookStockApplicationService', () => {
 
 このテストでは、`IncreaseBookStockApplicationService`を利用して、書籍の在庫を増加することができることを確認しています。また、更新対象の書籍が存在しない場合はエラーを投げることを確認しています。
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest` コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest IncreaseBookStockApplicationService.test.ts
@@ -462,7 +456,7 @@ export class DeleteBookApplicationService {
 
 ## 書籍削除アプリケーションサービスのテスト
 
-それでは、`DeleteBookApplicationService`のテストを実装していきましょう。`DeleteBookApplicationService`と同じ階層に`DeleteBookApplicationService.test.ts`ファイルを作成し、以下のように実装します。
+それでは、テストを実装していきましょう。`DeleteBookApplicationService`と同じディレクトリ内に`DeleteBookApplicationService.test.ts`ファイルを作成し、以下のように実装します。
 
 ```js:.../Application/Book/DeleteBookApplicationService/DeleteBookApplicationService.test.ts
 import { InMemoryBookRepository } from 'Infrastructure/InMemory/Book/InMemoryBookRepository';
@@ -500,7 +494,7 @@ describe('DeleteBookApplicationService', () => {
 
 このテストでは、`DeleteBookApplicationService`を利用して、書籍を削除することができることを確認しています。
 
-jest コマンドでテストを実行し、テストが成功することを確認します。
+`jest` コマンドでテストを実行し、テストが成功することを確認します。
 
 ```bash:StockManagement/
 $ jest DeleteBookApplicationService.test.ts
