@@ -24,8 +24,8 @@ chapters:
   - chapter12_repository
   - chapter13_application_service
   - chapter14_presentation
-  - chapter15
-  - chapter16
-  - chapter17
-  - chapter18
+  - chapter15_scalability
+  - chapter16_eslint
+  - chapter17_di_container
+  - chapter18_domain_event
 

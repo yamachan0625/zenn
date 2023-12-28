@@ -205,7 +205,7 @@ describe('ISBNDuplicationCheckDomainService', () => {
 
 ### リポジトリのインターフェイス
 
-ドメインサービスはドメイン層のオブジェクトです。インフラストラクチャのオブジェクトであるリポジトリを直接利用する (依存する) ことは、オニオンアーキテクチャに反しています。そこで **依存性逆転の原則 (DIP)** に従い、リポジトリの抽象、つまりインターフェイスを定義し、インターフェイスに具体的な実装を依存させるように`DI`する必要があります。
+ドメインサービスはドメイン層のオブジェクトです。インフラストラクチャのオブジェクトであるリポジトリを直接利用する (依存する) ことは、オニオンアーキテクチャに反しています。そこで **依存性逆転の原則 (DIP)** に従い、リポジトリの抽象、つまりインターフェイスを定義し、インターフェイスに具体的な実装を依存させるように DI する必要があります。
 
 それでは、リポジトリのインターフェイスを作成しましょう。`/Domain/models/Book`ディレクトリ配下に、`IBookRepository.ts`というファイル作成し、以下のように実装します。
 
@@ -230,7 +230,7 @@ export interface IBookRepository {
 
 ### リポジトリのインターフェイスを利用してみる
 
-それでは、`ISBNDuplicationCheckDomainService`が `IBookRepository` インターフェイスのリポジトリをコンストラクタインジェクションを通じて受け取るように変更します。そして`DI`されたリポジトリを利用するように置き換えてみましょう。
+それでは、`ISBNDuplicationCheckDomainService`が `IBookRepository` インターフェイスのリポジトリをコンストラクタインジェクションを通じて受け取るように変更します。そして DI されたリポジトリを利用するように置き換えてみましょう。
 
 ```js:.../ISBNDuplicationCheckDomainService.ts
 import { BookId } from 'Domain/models/Book/BookId/BookId';
@@ -254,7 +254,7 @@ export class ISBNDuplicationCheckDomainService {
 
 ### ドメインサービスのテスト
 
-次に、リポジトリを利用したケースのテストを書いていきましょう。`ISBNDuplicationCheckDomainService`はリポジトリを`IBookRepository`に依存しています。そのため、テストではテスト用の軽量なリポジトリを`DI`してテストすることが可能です。
+次に、リポジトリを利用したケースのテストを書いていきましょう。`ISBNDuplicationCheckDomainService`はリポジトリを`IBookRepository`に依存しています。そのため、テストではテスト用の軽量なリポジトリを DI してテストすることが可能です。
 
 ここでは、テストのためにインメモリを利用した軽量なリポジトリを実装し、テストを行います。`src`ディレクトリ配下に、` Infrastructure/InMemory/Book`ディレクトリを作成し、`InMemoryBookRepository.ts `というファイルを作成し、以下のように実装します。
 
@@ -827,7 +827,7 @@ export class PrismaTransactionManager implements ITransactionManager {
 :::
 
 :::details PrismaBookRepository
-`ClientManager` を `DI`します。
+`ClientManager` を DI します。
 リポジトリで利用する`PrismaClient`を`PrismaClientManager`から取得するように変更します。
 
 ```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
