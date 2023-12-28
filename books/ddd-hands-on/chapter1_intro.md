@@ -43,8 +43,8 @@ title: 'はじめに'
 
 # 利用する技術
 
-- TypeScript (言語)
-- Node.js (実行環境)
+- TypeScript (言語) v5.2.2
+- Node.js (実行環境) v18.15.0
 - Docker (DB 用コンテナ)
 - PostgreSQL (DB)
 - Prisma (ORM)
