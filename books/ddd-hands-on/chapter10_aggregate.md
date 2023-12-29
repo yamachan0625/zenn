@@ -502,3 +502,7 @@ class Review {
 ### これまでのコード
 
 https://github.com/yamachan0625/ddd-hands-on/tree/aggregate
+
+# 参考文献
+
+https://blog.j5ik2o.me/entry/2021/03/09/231332
