@@ -258,7 +258,7 @@ export class ISBNDuplicationCheckDomainService {
 
 ここでは、テストのためにインメモリを利用した軽量なリポジトリを実装し、テストを行います。`src`ディレクトリ配下に、` Infrastructure/InMemory/Book`ディレクトリを作成し、`InMemoryBookRepository.ts `というファイルを作成し、以下のように実装します。
 
-```js:StockManagement/src/Infrastructure/InMemory/Book/InMemoryBookRepository.ts
+```js:src/Infrastructure/InMemory/Book/InMemoryBookRepository.ts
 import { Book } from 'Domain/models/Book/Book';
 import { BookId } from 'Domain/models/Book/BookId/BookId';
 import { IBookRepository } from 'Domain/models/Book/IBookRepository';
@@ -366,7 +366,7 @@ $ jest ISBNDuplicationCheckDomainService.test.ts
 
 それでは実際の環境で利用する、`Prisma`を利用したリポジトリを実装していきましょう。さきほど作成した`Infrastructure`ディレクトリ配下に、`Prisma/Book`ディレクトリを作成し、`PrismaBookRepository.ts`というファイルを作成し、以下のように実装します。
 
-```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
+```js:src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
 import { $Enums, PrismaClient } from '@prisma/client';
 import { Book } from 'Domain/models/Book/Book';
 import { BookId } from 'Domain/models/Book/BookId/BookId';
@@ -501,7 +501,7 @@ export class PrismaBookRepository implements IBookRepository {
 
 リポジトリ自体のテストを行う前に実装しておきましょう。`Infrastructure`ディレクトリ配下に、`shared/Book`ディレクトリを作成します。次に`bookTestDataCreator.ts`というファイルを作成し、以下のように実装します。
 
-```js:StockManagement/src/Infrastructure/shared/Book/bookTestDataCreator.ts
+```js:src/Infrastructure/shared/Book/bookTestDataCreator.ts
 import { Book } from 'Domain/models/Book/Book';
 import { BookId } from 'Domain/models/Book/BookId/BookId';
 import { IBookRepository } from 'Domain/models/Book/IBookRepository';
@@ -545,7 +545,7 @@ export const bookTestDataCreator =
 
 それでは、リポジトリ自体が正しく動くか確認するテストを書いていきましょう。`PrismaBookRepository.ts`と同じ階層に`PrismaBookRepository.test.ts`というファイルを作成し、以下のように実装します。
 
-```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.test.ts
+```js:src/Infrastructure/Prisma/Book/PrismaBookRepository.test.ts
 import { PrismaClient } from '@prisma/client';
 import { PrismaBookRepository } from './PrismaBookRepository';
 import { bookTestDataCreator } from 'Infrastructure/shared/Book/bookTestDataCreator';
@@ -716,7 +716,7 @@ class ApplicationService {
 
 `src`ディレクトリに`Application/shared`ディレクトリを作成します。次に`ITransactionManager.ts`というファイルを作成し、以下のように実装します。
 
-```js:StockManagement/src/Application/shared/ITransactionManager.ts
+```js:src/Application/shared/ITransactionManager.ts
 export interface ITransactionManager {
   begin<T>(callback: () => Promise<T>): Promise<T | undefined>;
 }
@@ -753,7 +753,7 @@ class ApplicationService {
 :::details PrismaClient
 `PrismaClient` はアプリケーション全体で再利用することが推奨されているため、共通のインスタンスを利用するようにします。詳しくは[こちら](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections#prismaclient-in-long-running-applications)
 
-```js:StockManagement/src/Infrastructure/Prisma/prismaClient.ts
+```js:src/Infrastructure/Prisma/prismaClient.ts
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -765,7 +765,7 @@ export default prisma;
 :::details IDataAccessClientManager
 データアクセスクライアントの抽象化インターフェイスを提供します。
 
-```js:StockManagement/src/Infrastructure/shared/IDataAccessClientManager.ts
+```js:src/Infrastructure/shared/IDataAccessClientManager.ts
 export interface IDataAccessClientManager<T> {
   setClient(client: T): void;
   getClient(): T;
@@ -777,7 +777,7 @@ export interface IDataAccessClientManager<T> {
 :::details PrismaClientManager
 `IDataAccessClientManager`の`Prisma`を利用した実装です。
 
-```js:StockManagement/src/Infrastructure/Prisma/PrismaClientManager.ts
+```js:src/Infrastructure/Prisma/PrismaClientManager.ts
 import { Prisma, PrismaClient } from '@prisma/client';
 import prisma from './prismaClient';
 import { IDataAccessClientManager } from 'Infrastructure/shared/IDataAccessClientManager';
@@ -802,7 +802,7 @@ export class PrismaClientManager implements IDataAccessClientManager<Client> {
 :::details PrismaTransactionManager
 インターフェイス`ITransactionManager`の`Prisma`を利用した実装です。
 
-```js:StockManagement/src/Infrastructure/Prisma/PrismaTransactionManager.ts
+```js:src/Infrastructure/Prisma/PrismaTransactionManager.ts
 import { ITransactionManager } from '../../Application/shared/ITransactionManager'
 import prisma from './prismaClient'
 import { PrismaClientManager } from './PrismaClientManager'
@@ -830,7 +830,7 @@ export class PrismaTransactionManager implements ITransactionManager {
 `ClientManager` を DI します。
 リポジトリで利用する`PrismaClient`を`PrismaClientManager`から取得するように変更します。
 
-```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
+```js:src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
 export class PrismaBookRepository implements IBookRepository {
   // ClientManagerをDIする
   constructor(private clientManager: PrismaClientManager) {}
@@ -849,7 +849,7 @@ export class PrismaBookRepository implements IBookRepository {
 
 テストでは `PrismaBookRepository` に `clientManager` を渡すように変更します。
 
-```js:StockManagement/src/Infrastructure/Prisma/Book/PrismaBookRepository.test.ts
+```js:src/Infrastructure/Prisma/Book/PrismaBookRepository.test.ts
 describe('PrismaBookRepository', () => {
   (省略)
   const clientManager = new PrismaClientManager();

@@ -37,7 +37,7 @@ $ npm i --save-dev @types/express
 
 `src` ディレクトリ配下に`Presentation/Express`ディレクトリを作成します。次に、`index.ts`ファイルを作成し、以下のように実装します。
 
-```typescript:StockManagement/src/Presentation/Express/index.ts
+```typescript:src/Presentation/Express/index.ts
 const express = require('express')
 const app = express()
 const port = 3000
@@ -63,7 +63,7 @@ $ npx ts-node src/Presentation/Express/index.ts
 
 それでは、書籍登録 API の実装を行います。まずは、`API` のエンドポイントを作成します。`index.ts`ファイルに以下の実装を追加します。
 
-```js:StockManagement/src/Presentation/Express/index.ts
+```js:src/Presentation/Express/index.ts
 import express from 'express';
 
 import {

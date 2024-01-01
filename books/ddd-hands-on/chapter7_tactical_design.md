@@ -161,7 +161,7 @@ $ npm i -D typescript ts-node tsconfig-paths @types/node jest ts-jest @types/jes
 
 `sayHello.ts`を作成し以下のようにコードを記述します。
 
-```js:StockManagement/src/sayHello.ts
+```js:src/sayHello.ts
 export const sayHello = (name: string): void => {
   console.log(`Hello ${name}!`);
 };
@@ -194,7 +194,7 @@ module.exports = {
 
 `src`ディレクトリ配下に`sayHello.test.ts`を作成し以下のように実装します。
 
-```js:StockManagement/src/sayHello.test.ts
+```js:src/sayHello.test.ts
 import { sayHello } from './sayHello';
 
 test('sayHello', () => {

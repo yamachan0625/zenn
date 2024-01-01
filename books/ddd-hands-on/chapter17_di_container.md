@@ -76,7 +76,7 @@ $ npm install --save tsyringe reflect-metadata
 
 それでは 依存関係として DI されるクラスに対して上記の設定を行なっていきましょう。
 
-```diff js:StockManagement/src/Infrastructure/Prisma/PrismaTransactionManager.ts
+```diff js:src/Infrastructure/Prisma/PrismaTransactionManager.ts
 + import { injectable, inject } from 'tsyringe';
   ...
 
@@ -90,7 +90,7 @@ $ npm install --save tsyringe reflect-metadata
   }
 ```
 
-```diff js:StockManagement/src/Infrastructure/Prisma/PrismaTransactionManager.ts
+```diff js:src/Infrastructure/Prisma/PrismaTransactionManager.ts
 + import { injectable, inject } from 'tsyringe';
   ...
 
@@ -128,7 +128,7 @@ $ npm install --save tsyringe reflect-metadata
 
 `src/`配下に依存オブジェクト登録用に`Program.ts`ファイルを作成し、以下のように実装します。
 
-```typescript:StockManagement/src/Program.ts
+```typescript:src/Program.ts
 import { container, Lifecycle } from 'tsyringe';
 
 import { PrismaBookRepository } from 'Infrastructure/Prisma/Book/PrismaBookRepository';
@@ -167,7 +167,7 @@ container.register(
 `container.register`によって登録された依存オブジェクトは、`container.resolve`を利用して解決することができます。
 それでは、`RegisterBookApplicationService`のインスタンス化を`container.resolve`を利用して行なってみましょう。
 
-```diff js:StockManagement/src/Express/index.ts
+```diff js:src/Express/index.ts
 + // Reflectのポリフィルをcontainer.resolveされる前に一度読み込む必要がある
 + import 'reflect-metadata';
 + import '../../Program';

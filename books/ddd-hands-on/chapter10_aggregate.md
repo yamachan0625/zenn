@@ -88,7 +88,7 @@ const quantityAvailable = new Book(new Stock(100)).getQuantityAvailable();
 
 それでは`Book.pu`と同じディレクトリ内に`Book.ts`ファイルを作成し、デメテルの法則にしたがって `Book` ルートエンティティを以下のように実装します。
 
-```js:StockManagement/src/Domain/models/Book/Book.ts
+```js:src/Domain/models/Book/Book.ts
 import { BookId } from './BookId/BookId';
 import { Price } from './Price/Price';
 import { StatusEnum } from './Stock/Status/Status';
@@ -173,7 +173,7 @@ export class Book {
 
 それではテストを書いていきましょう。`Book.ts`と同じディレクトリに`Book.test.ts`を作成し、以下のように実装します。
 
-```js:StockManagement/src/Domain/models/Book/Book.test.ts
+```js:src/Domain/models/Book/Book.test.ts
 import { Book } from './Book';
 import { BookId } from './BookId/BookId';
 import { Title } from './Title/Title';

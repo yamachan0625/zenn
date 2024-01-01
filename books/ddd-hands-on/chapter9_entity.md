@@ -72,7 +72,7 @@ console.log(bookId1.equals(bookId2)); // true
 
 エンティティの特徴が確認できたので、実際に`Stock`エンティティを例にエンティティを実装していきましょう。まずはドメインモデリングで作成した`Stock`エンティティを振り返ってみましょう。`Stock`エンティティが持つ属性やビジネスルールは以下の通りです。
 
-```plantuml:StockManagement/src/Domain/models/Book/Stock/Stock.pu
+```plantuml:src/Domain/models/Book/Stock/Stock.pu
 @startuml Stock
 
 !include ./Status/Status.pu
@@ -102,7 +102,7 @@ end note
 
 それでは`Stock.pu`と同じディレクトリに`Stock.ts`ファイルを作成し以下のように実装します。
 
-```js:StockManagement/src/Domain/models/Book/Stock/Stock.ts
+```js:src/Domain/models/Book/Stock/Stock.ts
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
 import { Status, StatusEnum } from './Status/Status';
 import { StockId } from './StockId/StockId';
@@ -216,7 +216,7 @@ stock.delete();
 
 実装したエンティティはまだ未完成です。今のままではビジネスルールに反したエンティティのライフサイクルが発生してしまいます。たとえば`在庫数が0`の状態でステータスが`在庫あり`のエンティティが生成できてしまいます。そこで、エンティティのライフサイクルにビジネスルールを適用する必要があります。それでは、ビジネスルールを適用していきましょう。
 
-```js:StockManagement/src/Domain/models/Book/Stock/Stock.ts
+```js:src/Domain/models/Book/Stock/Stock.ts
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
 import { Status, StatusEnum } from './Status/Status';
 import { StockId } from './StockId/StockId';
@@ -389,7 +389,7 @@ export class Stock {
 
 値オブジェクト同様、ビジネスルールが正しく実装されているかを保証するためにはテストは必須です。`Stock.ts`と同じディレクトリに`Stock.test.ts`を作成し、以下のように実装します。
 
-```js:StockManagement/src/Domain/models/Book/Stock/Stock.test.ts
+```js:src/Domain/models/Book/Stock/Stock.test.ts
 import { Stock } from './Stock';
 import { QuantityAvailable } from './QuantityAvailable/QuantityAvailable';
 import { Status, StatusEnum } from './Status/Status';

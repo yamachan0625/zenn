@@ -114,7 +114,7 @@ $ npm i -D @types/lodash
 
 `src/Domain/models/Book/BookId/`配下に`BookId.ts`を作成し以下のように実装します。これが基本的な値オブジェクトのベースになります。
 
-```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
+```js:src/Domain/models/Book/BookId/BookId.ts
 import isEqual from 'lodash/isEqual';
 
 export class BookId {
@@ -194,7 +194,7 @@ console.log(bookId1.value); // "9784167158057"
 
 実装した値オブジェクトが値の特徴を満たしていることが確認できました。ですが、まだ未完成です。今のままでは変わらず不正な ISBN で `BookId` を生成することが可能です。値オブジェクトの真髄は値にビジネスルールを適用できる点にあります。それでは、ビジネスルールを適用していきましょう。(バリデーション、変換のロジックの実装は省略します)
 
-```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
+```js:src/Domain/models/Book/BookId/BookId.ts
 import { isEqual } from 'lodash';
 
 export class BookId {
@@ -321,7 +321,7 @@ export class BookId {
 
 それではテストを書いていきましょう。`BookId.ts`と同じディレクトリに`BookId.test.ts`を作成し、以下のように実装します。
 
-```js:StockManagement/src/Domain/models/Book/BookId/BookId.test.ts
+```js:src/Domain/models/Book/BookId/BookId.test.ts
 import { BookId } from './BookId';
 
 describe('BookId', () => {
@@ -450,7 +450,7 @@ new Person(
 次はリファクタリングを行いましょう。ここでは共通処理を抽象化します。たとえば、値オブジェクトの等価性を比較する`equals`メソッドは、すべての値オブジェクトで同じ実装を行う必要があります。これは、値オブジェクトの実装を重複させることになります。そこで、値オブジェクトの共通処理を抽象化することで、値オブジェクトの実装を簡潔にできます。
 それではすべての値オブジェクトが継承する 共通クラス`ValueObject` を作成します。
 
-```js:StockManagement/src/Domain/models/shared/ValueObject.ts
+```js:src/Domain/models/shared/ValueObject.ts
 import { isEqual } from 'lodash';
 
 export abstract class ValueObject<T, U> {
@@ -514,7 +514,7 @@ print(new OrderId('1')); // OrderIdを渡してもエラーにならない
 
 次に、`BookId`クラスを`ValueObject`を継承するようにリファクタリングします。共通の処理が`ValueObject`に移動したため、`BookId`クラスは自身のビジネスロジックのみを実装することができ、簡潔になりました。
 
-```js:StockManagement/src/Domain/models/Book/BookId/BookId.ts
+```js:src/Domain/models/Book/BookId/BookId.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 export class BookId extends ValueObject<string, 'BookId'> {
@@ -555,7 +555,7 @@ $ jest
 
 :::details Price
 
-```js:StockManagement/src/Domain/models/Book/Price/Price.ts
+```js:src/Domain/models/Book/Price/Price.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 interface PriceValue {
@@ -594,7 +594,7 @@ export class Price extends ValueObject<PriceValue, 'Price'> {
 
 ```
 
-```js:StockManagement/src/Domain/models/Book/Price/Price.test.ts
+```js:src/Domain/models/Book/Price/Price.test.ts
 import { Price } from './Price';
 
 describe('Price', () => {
@@ -639,7 +639,7 @@ describe('Price', () => {
 
 :::details Title
 
-```js:StockManagement/src/Domain/models/Book/Title/Title.ts
+```js:src/Domain/models/Book/Title/Title.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 type TitleValue = string;
@@ -663,7 +663,7 @@ export class Title extends ValueObject<TitleValue, 'Title'> {
 
 ```
 
-```js:StockManagement/src/Domain/models/Book/Title/Title.test.ts
+```js:src/Domain/models/Book/Title/Title.test.ts
 import { Title } from './Title';
 
 describe('Title', () => {
@@ -697,7 +697,7 @@ describe('Title', () => {
 
 :::details StockId
 
-```js:StockManagement/src/Domain/models/Book/Stock/StockId.ts
+```js:src/Domain/models/Book/Stock/StockId.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 import { nanoid } from 'nanoid';
 
@@ -724,7 +724,7 @@ export class StockId extends ValueObject<StockIdValue, 'StockId'> {
 
 ```
 
-```js:StockManagement/src/Domain/models/Book/Stock/StockId.test.ts
+```js:src/Domain/models/Book/Stock/StockId.test.ts
 import { StockId } from './StockId';
 
 // nanoid() をモックする
@@ -769,7 +769,7 @@ describe('StockId', () => {
 
 :::details QuantityAvailable
 
-```js:StockManagement/src/Domain/models/Book/Stock/QuantityAvailable.ts
+```js:src/Domain/models/Book/Stock/QuantityAvailable.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 type QuantityAvailableValue = number;
@@ -807,7 +807,7 @@ export class QuantityAvailable extends ValueObject<
 
 ```
 
-```js:StockManagement/src/Domain/models/Book/Stock/QuantityAvailable.test.ts
+```js:src/Domain/models/Book/Stock/QuantityAvailable.test.ts
 import { QuantityAvailable } from './QuantityAvailable';
 
 describe('QuantityAvailable', () => {
@@ -876,7 +876,7 @@ describe('QuantityAvailable', () => {
 
 :::details Status
 
-```js:StockManagement/src/Domain/models/Book/Stock/Status.ts
+```js:src/Domain/models/Book/Stock/Status.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 export enum StatusEnum {
@@ -913,7 +913,7 @@ export class Status extends ValueObject<StatusValue, 'Status'> {
 
 ```
 
-```js:StockManagement/src/Domain/models/Book/Stock/Status.test.ts
+```js:src/Domain/models/Book/Stock/Status.test.ts
 import { Status, StatusEnum } from './Status';
 
 describe('Status', () => {

@@ -154,7 +154,7 @@ module.exports = {
 
 設定が完了したので、実際に不正な依存関係の import を行い動作確認をしてみましょう。
 
-```js:stockManagement/src/Domain/models/Book/Book.ts
+```js:src/Domain/models/Book/Book.ts
 import prisma from 'Infrastructure/Prisma/prismaClient';
 ```
 
