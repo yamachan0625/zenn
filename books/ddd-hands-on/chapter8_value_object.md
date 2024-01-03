@@ -975,3 +975,7 @@ $ jest
 ### これまでのコード
 
 https://github.com/yamachan0625/ddd-hands-on/tree/valueObject
+
+# 参考文献
+
+https://qiita.com/suin/items/57cfc0ec9bb1a6995aa5
