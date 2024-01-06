@@ -612,7 +612,7 @@ DomainEvent {
 以上で動作確認は完了です。
 
 最後に全体的な処理の流れを確認しておきましょう。
-![](https://storage.googleapis.com/zenn-user-upload/f7085575e7b3-20240106.png)
+![](https://storage.googleapis.com/zenn-user-upload/f7b0c889eac4-20240106.png)
 
 :::message
 ドメインイベントを扱う際、実際のシステム設計はより複雑になります。とくに、ドメインイベントの確実なパブリッシングや失敗時の対応、処理の整合性の維持など、重要な側面を考慮する必要があります。以下に、ドメインイベントをより安全に扱うためのいくつかのパターンを紹介します。
