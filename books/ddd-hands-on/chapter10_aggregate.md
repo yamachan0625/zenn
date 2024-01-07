@@ -53,7 +53,7 @@ const quantityAvailable = new Book(new Stock(100)).stock.quantityAvailable;
 
 ```
 
-この例では、`Book` クラスは `Stock` クラスを通じて `quantityAvailable` にアクセスしています。これは`Book` クラスが `Stock` クラス の内部構造（Stock が quantityAvailable を持っていること）に依存しており、結合度が高いと考えられます。
+この例では、`Book` クラスは `Stock` クラスを通じて `quantityAvailable` にアクセスしています。これは`Book` クラスが `Stock` クラス の内部構造（Stock が quantityAvailable を持っていること）に依存しており、結合度が高いです。
 
 ```js
 // デメテルの法則適用後のコード例
