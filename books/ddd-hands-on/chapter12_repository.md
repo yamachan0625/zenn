@@ -136,9 +136,9 @@ export class ISBNDuplicationCheckDomainService {
       },
     });
 
-    const isisDuplicateISBN = duplicateISBNBook !== null;
+    const isDuplicateISBN = duplicateISBNBook !== null;
 
-    return isisDuplicateISBN;
+    return isDuplicateISBN;
   }
 }
 ```
@@ -243,9 +243,9 @@ export class ISBNDuplicationCheckDomainService {
   async execute(isbn: BookId): Promise<boolean> {
     // データベースに問い合わせて重複があるか確認する
     const duplicateISBNBook = await this.bookRepository.find(isbn);
-    const isisDuplicateISBN = !!duplicateISBNBook;
+    const isDuplicateISBN = !!duplicateISBNBook;
 
-    return isisDuplicateISBN;
+    return isDuplicateISBN;
   }
 }
 ```
