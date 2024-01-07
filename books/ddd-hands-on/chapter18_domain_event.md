@@ -283,7 +283,19 @@ export class BookDomainEventFactory {
 }
 ```
 
-`BookDomainEventFactory`でドメインイベントを生成し、継承した`DomainEventStorable`クラスの`addDomainEvent`メソッドを利用してドメインイベントを記録します。記録したドメインイベントをどのように利用するかは後ほど説明します。
+`BookDomainEventFactory`でドメインイベントを生成し、継承した`DomainEventStorable`クラスの`addDomainEvent`メソッドを利用してドメインイベントを記録します。集約のテストでは、`getDomainEvents`メソッドを利用して記録されたドメインイベントを取得し、期待するドメインイベントが記録されているかどうかを検証します。
+
+```ts
+describe('create', () => {
+  it('デフォルト値で在庫を作成し、ドメインイベントが生成される', () => {
+    const book = Book.create(bookId, title, price);
+    // 期待するドメインイベントが記録されているかどうかを検証する
+    expect(book.getDomainEvents()[0].eventName).toBe(BOOK_EVENT_NAME.CREATED);
+  });
+});
+```
+
+記録したドメインイベントをどのように利用するかは後ほど説明します。
 
 ## EventEmitter を利用したパブリッシャー/サブスクライバーの実装
 
@@ -474,7 +486,7 @@ export class EventEmitterDomainEventSubscriber
 ```
 
 `Prisma`による集約の永続化が成功した後に、`getDomainEvents`で一時的に記録されたドメインイベントを取り出し、`domainEventPublisher.publish(event)`でドメインイベントをパブリッシュしています。その後`clearDomainEvents`を呼び出し、一時的に記録されたドメインイベントをクリアしています。
-`update`、`delete`メソッドも同様に修正しましょう。リポジトリのテストでは`IDomainEventPublisher`のモックを DI し、テストすることができます。
+`update`、`delete`メソッドも同様に修正しましょう。リポジトリのテストでは`IDomainEventPublisher`のモックし、`publish`メソッドが呼び出されているかどうかを検証しましょう。
 
 次にアプリケーションサービスで`domainEventPublisher`を DI し、リポジトリに渡すように修正します。今回は例として`RegisterBookApplicationService.ts`を以下のように修正します。
 
@@ -609,7 +621,7 @@ DomainEvent {
 }
 ```
 
-以上で動作確認は完了です。
+以上で動作確認は完了です。ドメインイベントに関するテストは、これまでの内容を生かして実装してみてください。
 
 最後に全体的な処理の流れを確認しておきましょう。
 ![](https://storage.googleapis.com/zenn-user-upload/f7b0c889eac4-20240106.png)

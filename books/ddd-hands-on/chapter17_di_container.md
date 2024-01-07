@@ -1,5 +1,5 @@
 ---
-title: 'DI コンテナで依存を切り替える'
+title: 'DI コンテナで依存関係を切り替える'
 ---
 
 # DI コンテナとは
@@ -58,6 +58,25 @@ $ npm install --save tsyringe reflect-metadata
     "include": ["src/**/*.ts", "src/**/*.js"],
     "exclude": ["node_modules"]
   }
+```
+
+テストでポリフィルの影響を受けるため、テストが開始される前にポリフィルを読み込むような設定を行います。`setupJest.ts`ファイルを作成し、以下のように実装します。
+
+```ts:setupJest.ts
+import 'reflect-metadata';
+```
+
+`jest` では`jest.config.js`の`setupFilesAfterEnv`を利用してテストが実行される前に適当な処理を行うことができます。`setupJest.ts`を読み込むように設定を変更します。
+
+```diff js:StockManagement/jest.config.js
+  /** @type {import('ts-jest').JestConfigWithTsJest} */
+  module.exports = {
+    preset: 'ts-jest',
+    testEnvironment: 'node',
+    moduleDirectories: ['node_modules', 'src'],
+    transformIgnorePatterns: ['/node_modules'],
++   setupFilesAfterEnv: ['./setupJest.ts'],
+};
 ```
 
 以上で環境のセットアップは完了です。
