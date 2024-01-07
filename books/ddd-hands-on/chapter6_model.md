@@ -103,9 +103,10 @@ $ mkdir StockManagement/Domain/models/Book
 1. **集約の定義**
    集約をクラス図で表現し、保持する属性の対訳 (英語 ⇆ 日本語) を定義します。
    **Book (Root Entity) :** **集約のルート**として機能するエンティティです。
-   **Stock:** 在庫を表すエンティティです。
+   **Stock (Entity) :** 在庫を表すエンティティです。
    :::message
-   集約のルートの詳細は`chapter10 集約`で説明します。
+   集約のルートとは、外部からエンティティの状態を変更することができる唯一のエントリーポイントです。
+   詳細は`chapter10 集約`で説明します。
    :::
 
 ```plantuml:StockManagement/Domain/models/Book/Book.pu
