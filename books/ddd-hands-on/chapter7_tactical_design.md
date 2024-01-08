@@ -19,7 +19,7 @@ title: '第2部 戦術的設計 (コード実装)'
 ## オニオンアーキテクチャの特徴
 
 オニオンアーキテクチャは一般的に以下のような図で表現されます。
-![](https://storage.googleapis.com/zenn-user-upload/ea8459dbb430-20231121.png)
+![](https://storage.googleapis.com/zenn-user-upload/0852995fe722-20240108.png)
 
 この図を参考にオニオンアーキテクチャの特徴を見ていきましょう。
 
