@@ -80,7 +80,7 @@ module.exports = {
 
 設定の前に、再度オニオンアーキテクチャの図を確認し、不正な依存関係を洗い出しておきましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/ea8459dbb430-20231121.png)
+![](https://storage.googleapis.com/zenn-user-upload/0852995fe722-20240108.png)
 
 **ドメイン層が依存してはいけない層**
 
