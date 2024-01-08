@@ -59,7 +59,7 @@ package Test {
 $ mkdir OnlineBookstore
 ```
 
-さらにサブディレクトリを作成します。ディレクトリ名はコアドメインもしくはサブドメイン名になります。ここでは `StockManagementDomain` (在庫管理) とします。
+さらにサブディレクトリを作成します。ディレクトリ名はコアドメインもしくはサブドメイン名になります。ここでは `StockManagement` (在庫管理) とします。
 
 ```bash
 $ mkdir StockManagement
