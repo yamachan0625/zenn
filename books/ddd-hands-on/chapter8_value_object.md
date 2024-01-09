@@ -4,7 +4,7 @@ title: '値オブジェクト (Value Object)'
 
 # 値オブジェクトとは
 
-値オブジェクトは、エンティティと並びドメインモデル (ドメインオブジェクト) の中心的な要素で、ドメイン内のさまざまな**値**の概念をモデル化するのに用いられます。値には、名前、年齢、色などがあります。値オブジェクトは、これらの値を表現するために使用されます。
+値オブジェクト (Value Object) とは、エンティティと並びドメインモデル (ドメインオブジェクト) の中心的な要素で、ドメイン内のさまざまな**値**の概念をモデル化するのに用いられます。値には、名前、年齢、色などがあります。値オブジェクトは、これらの値を表現するために使用されます。
 
 ## 値とは
 
@@ -183,7 +183,7 @@ import { isEqual } from 'lodash';
 export class BookId {
   private readonly _value: string;
 
-  static MAX_LENGTH = 100;
+  static MAX_LENGTH = 13;
   static MIN_LENGTH = 10;
 
   constructor(value: string) {
@@ -339,9 +339,7 @@ describe('BookId', () => {
   });
 
   test('不正なフォーマットの場合にエラーを投げる', () => {
-    expect(() => new BookId('187437538537852742')).toThrow(
-      '不正なISBNの形式です'
-    );
+    expect(() => new BookId('9994167158057')).toThrow('不正なISBNの形式です');
   });
 });
 
@@ -501,7 +499,7 @@ print(new OrderId('1')); // OrderIdを渡してもエラーにならない
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 export class BookId extends ValueObject<string, 'BookId'> {
-  static MAX_LENGTH = 100;
+  static MAX_LENGTH = 13;
   static MIN_LENGTH = 10;
 
   constructor(value: string) {
