@@ -4,7 +4,7 @@ title: 'ドメインサービス (Domain Service)'
 
 # ドメインサービスとは
 
-ドメインサービスとは、ドメインモデルの中で、**エンティティや値オブジェクトだけでは自然に表現できない**ビジネスロジックをカプセル化するための「**サービス**」です。
+ドメインサービス (Domain Service) とは、ドメインモデルの中で、**エンティティや値オブジェクトだけでは自然に表現できない**ビジネスロジックをカプセル化するための「**サービス**」です。
 
 ## サービスとは
 
@@ -63,9 +63,9 @@ import { BookId } from 'Domain/models/Book/BookId/BookId';
 export class ISBNDuplicationCheckDomainService {
   async execute(isbn: BookId): Promise<boolean> {
     // 本来は、データベースに問い合わせて重複があるか確認する。この章では省略。
-    const isisDuplicateISBN = false;
+    const isDuplicateISBN = false;
 
-    return isisDuplicateISBN;
+    return isDuplicateISBN;
   }
 }
 ```
