@@ -7,7 +7,7 @@ summary: 'TypeScriptとドメイン駆動設計（DDD）を組み合わせ、API
 
 TypeScriptを使ってコードを書きながら、DDDの概念を実際のプロジェクトに適用するヒントを紹介します。'
 topics: ["DDD", "ドメイン駆動設計", "TypeScript", "アジャイル", "アーキテクチャ"]
-published: false
+published: true
 price: 0 # 有料の場合200〜5000
 toc_depth: 2
 # 本に含めるチャプターを順番に並べましょう
