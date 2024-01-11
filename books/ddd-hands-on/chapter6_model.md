@@ -303,7 +303,7 @@ end note
 
 :::
 
-:::details .../Book/Book/Price/Price.pu
+:::details .../Book/Price/Price.pu
 
 ```plantuml:StockManagement/Domain/models/Book/Price/Price.pu
 @startuml Price
@@ -323,9 +323,9 @@ end note
 
 :::
 
-:::details .../Book/Book/Title/Title.pu
+:::details .../Book/Title/Title.pu
 
-```plantuml:.../Book/Book/Title/Title.pu
+```plantuml:.../Book/Title/Title.pu
 
 @startuml Title
 
@@ -343,7 +343,7 @@ end note
 
 :::
 
-:::details .../Book/Book/QuantityAvailable/QuantityAvailable.pu
+:::details .../Book/QuantityAvailable/QuantityAvailable.pu
 
 ```plantuml:StockManagement/Domain/models/Book/QuantityAvailable/QuantityAvailable.pu
 
