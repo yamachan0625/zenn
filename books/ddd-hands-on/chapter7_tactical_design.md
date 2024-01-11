@@ -110,7 +110,7 @@ v18.15.0
 
 ### npm プロジェクトの初期化
 
-```bash:StockManagement/
+```bash:
 $ npm init -y
 ```
 
@@ -118,7 +118,7 @@ $ npm init -y
 
 `src` ディレクトリを作成し `Domain`ディレクトリを`src`ディレクトリ配下に移動します。
 
-```bash:StockManagement/
+```bash:
 $ mkdir src && mv Domain/ src/
 ```
 
@@ -126,7 +126,7 @@ $ mkdir src && mv Domain/ src/
 
 必要なパッケージをインストールしていきます。
 
-```bash:StockManagement/
+```bash:
 $ npm i -D typescript ts-node tsconfig-paths @types/node jest ts-jest @types/jest
 ```
 
@@ -134,7 +134,7 @@ $ npm i -D typescript ts-node tsconfig-paths @types/node jest ts-jest @types/jes
 
 `tsconfig.json`を作成し以下のように、設定を行なってください。オプションはお好みで追加してください。
 
-```json:StockManagement/tsconfig.json
+```json:tsconfig.json
 {
   "ts-node": {
     "require": ["tsconfig-paths/register"]
@@ -170,7 +170,7 @@ sayHello('World');
 
 ```
 
-```bash:StockManagement/
+```bash:
 $ ts-node src/sayHello.ts
 ```
 
@@ -180,7 +180,7 @@ $ ts-node src/sayHello.ts
 
 テストには`jest`を利用します。まず`jest.config.js`を作成し以下のように設定を行なってください。
 
-```js:StockManagement/jest.config.js
+```js:jest.config.js
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
@@ -203,7 +203,7 @@ test('sayHello', () => {
 
 ```
 
-```bash:StockManagement/
+```bash:
 $ jest src/sayHello.test.ts
 ```
 
