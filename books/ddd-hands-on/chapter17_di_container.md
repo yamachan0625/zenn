@@ -109,7 +109,7 @@ import 'reflect-metadata';
   }
 ```
 
-```diff js:src/Infrastructure/Prisma/PrismaTransactionManager.ts
+```diff js:src/Infrastructure/Prisma/Book/PrismaBookRepository.ts
 + import { injectable, inject } from 'tsyringe';
   ...
 
