@@ -482,11 +482,11 @@ class OrderId {
   constructor(public readonly id: string) {}
 }
 
-const print = (customerId: CustomerId) => {
+const log = (customerId: CustomerId) => {
   console.log(customerId.id);
 }
 
-print(new OrderId('1')); // OrderIdを渡してもエラーにならない
+log(new OrderId('1')); // OrderIdを渡してもエラーにならない
 ```
 
 これらは同じ構造を持っているため、`TypeScript` はこれらの型を同等とみなします。これは意図しないバグを引き起こす可能性があります。たとえば、`CustomerId` を期待する関数に `OrderId` を渡すことができてしまいます。このような型の混同を防ぐために、`_type` のような専用のプロパティを追加します。これにより、構造的には同じでも、このプライベートプロパティのおかげで異なる型として認識させることができます。
