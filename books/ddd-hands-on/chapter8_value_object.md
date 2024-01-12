@@ -678,7 +678,7 @@ describe('Title', () => {
 
 :::details StockId
 
-```js:src/Domain/models/Book/Stock/StockId.ts
+```js:src/Domain/models/Book/Stock/StockId/StockId.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 import { nanoid } from 'nanoid';
 
@@ -705,7 +705,7 @@ export class StockId extends ValueObject<StockIdValue, 'StockId'> {
 
 ```
 
-```js:src/Domain/models/Book/Stock/StockId.test.ts
+```js:src/Domain/models/Book/Stock/StockId/StockId.test.ts
 import { StockId } from './StockId';
 
 // nanoid() をモックする
@@ -750,7 +750,7 @@ describe('StockId', () => {
 
 :::details QuantityAvailable
 
-```js:src/Domain/models/Book/Stock/QuantityAvailable.ts
+```js:src/Domain/models/Book/Stock/QuantityAvailable/QuantityAvailable.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 type QuantityAvailableValue = number;
@@ -788,7 +788,7 @@ export class QuantityAvailable extends ValueObject<
 
 ```
 
-```js:src/Domain/models/Book/Stock/QuantityAvailable.test.ts
+```js:src/Domain/models/Book/Stock/QuantityAvailable/QuantityAvailable.test.ts
 import { QuantityAvailable } from './QuantityAvailable';
 
 describe('QuantityAvailable', () => {
@@ -857,7 +857,7 @@ describe('QuantityAvailable', () => {
 
 :::details Status
 
-```js:src/Domain/models/Book/Stock/Status.ts
+```js:src/Domain/models/Book/Stock/Status/Status.ts
 import { ValueObject } from 'Domain/models/shared/ValueObject';
 
 export enum StatusEnum {
@@ -894,7 +894,7 @@ export class Status extends ValueObject<StatusValue, 'Status'> {
 
 ```
 
-```js:src/Domain/models/Book/Stock/Status.test.ts
+```js:src/Domain/models/Book/Stock/Status/Status.test.ts
 import { Status, StatusEnum } from './Status';
 
 describe('Status', () => {
