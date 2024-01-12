@@ -162,8 +162,10 @@ $ npm i -D typescript ts-node tsconfig-paths @types/node jest ts-jest @types/jes
 `sayHello.ts`を作成し以下のようにコードを記述します。
 
 ```js:src/sayHello.ts
-export const sayHello = (name: string): void => {
-  console.log(`Hello ${name}!`);
+export const sayHello = (name: string): string => {
+  const res = `Hello ${name}!`
+  console.log(res);
+  return res;
 };
 
 sayHello('World');
@@ -198,7 +200,7 @@ module.exports = {
 import { sayHello } from './sayHello';
 
 test('sayHello', () => {
-  expect(sayHello('World')).toBe('Hello World');
+  expect(sayHello('World')).toBe('Hello World!');
 });
 
 ```
