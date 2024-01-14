@@ -343,9 +343,9 @@ end note
 
 :::
 
-:::details .../Book/QuantityAvailable/QuantityAvailable.pu
+:::details .../Book/Stock/QuantityAvailable/QuantityAvailable.pu
 
-```plantuml:StockManagement/Domain/models/Book/QuantityAvailable/QuantityAvailable.pu
+```plantuml:StockManagement/Domain/models/Book/Stock/QuantityAvailable/QuantityAvailable.pu
 
 @startuml QuantityAvailable
 
