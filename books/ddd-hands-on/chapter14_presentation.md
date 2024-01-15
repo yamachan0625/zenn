@@ -38,17 +38,18 @@ $ npm i --save-dev @types/express
 `src` ディレクトリ配下に`Presentation/Express`ディレクトリを作成します。次に、`index.ts`ファイルを作成し、以下のように実装します。
 
 ```typescript:src/Presentation/Express/index.ts
-const express = require('express')
-const app = express()
-const port = 3000
+import express from 'express';
+
+const app = express();
+const port = 3000;
 
 app.get('/', (_, res) => {
-  res.send('Hello World!')
+  res.send('Hello World!');
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 ```
 
 サーバの起動を行います。
