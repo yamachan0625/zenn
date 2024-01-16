@@ -183,6 +183,14 @@ export abstract class DomainEventStorable {
   // DomainEventStorableを継承する
 - export class Book {
 + export class Book extends DomainEventStorable {
+    private constructor(
+      private readonly _bookId: BookId,
+      private _title: Title,
+      private _price: Price,
+      private readonly _stock: Stock
+    ) {
++     super();
+    }
     (省略)
 }
 ```
@@ -239,7 +247,7 @@ export class BookDomainEventFactory {
   import { DomainEventStorable } from 'Domain/shared/DomainEvent/DomainEventStorable';
   import { BookId } from './BookId/BookId';
   import { Price } from './Price/Price';
-  import { Status, StatusEnum } from './Stock/Status/Status';
++ import { Status, StatusEnum } from './Stock/Status/Status';
   import { Stock } from './Stock/Stock';
   import { Title } from './Title/Title';
 + import {
@@ -257,7 +265,7 @@ export class BookDomainEventFactory {
 +       new BookDomainEventFactory(book).createEvent(BOOK_EVENT_NAME.CREATED)
 +     );
 
-      return book;
++     return book;
     }
 
     delete() {
