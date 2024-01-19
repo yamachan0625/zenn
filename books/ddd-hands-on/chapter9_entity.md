@@ -192,7 +192,7 @@ const stock: Stock = Stock.create(
 );
 
 stock.changeStatus(new Status(StatusEnum.LowStock));
-console.log(stock.status); // Status { _value: 'OnSale' }
+console.log(stock.status); // Status { _value: 'LowStock' }
 
 stock.changeQuantityAvailable(new QuantityAvailable(100));
 console.log(stock.quantityAvailable); // QuantityAvailable { _value: 100 }
