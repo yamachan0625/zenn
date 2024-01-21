@@ -174,7 +174,7 @@ export class Stock {
 const stock: Stock = Stock.create(
   new StockId(),
   new QuantityAvailable(0),
-  new Status(StatusEnum.PreSale)
+  new Status(StatusEnum.OutOfStock)
 );
 
 stock.stockId = new StockId('stockId2'); // StockIdはreadonlyなので変更できない
@@ -188,7 +188,7 @@ stock.stockId = new StockId('stockId2'); // StockIdはreadonlyなので変更で
 const stock: Stock = Stock.create(
   new StockId(),
   new QuantityAvailable(0),
-  new Status(StatusEnum.PreSale)
+  new Status(StatusEnum.OutOfStock)
 );
 
 stock.changeStatus(new Status(StatusEnum.OnSale));
@@ -206,7 +206,7 @@ console.log(stock.quantityAvailable); // QuantityAvailable { _value: 100 }
 const stock: Stock = Stock.create(
   new StockId(),
   new QuantityAvailable(0),
-  new Status(StatusEnum.PreSale)
+  new Status(StatusEnum.OutOfStock)
 );
 stock.changeStatus(new Status(StatusEnum.OnSale));
 stock.delete();
@@ -316,7 +316,7 @@ export class Stock {
  static create() {
     const defaultStockId = new StockId(); // 自動ID採番
     const defaultQuantityAvailable = new QuantityAvailable(0)
-    const defaultStatus = new Status(StatusEnum.PreSale);
+    const defaultStatus = new Status(StatusEnum.OutOfStock);
 
     return new Stock(
       defaultStockId,
