@@ -302,7 +302,6 @@ $ jest GetBookApplicationService.test.ts
 ```
 
 エラーなく成功すれば OK です。
-在庫を増やすために必要なドメ
 
 # 在庫追加アプリケーションサービスの実装
 
